@@ -21,7 +21,7 @@ Bu sürüm Adobe Audition CEP paneli değildir. Uygulama, REAPER içinde çalı�
 
 1. Orijinal ses klasörünü seçin. Uzantı bütün alt klasörleri tarar, sesleri doğal isim sırasına koyar ve `ODIUM - Originals` track’ine yerleştirir.
 2. Kaydı `ODIUM - Recordings` track’ine alın. `Pozisyona göre` veya `Sıraya göre` eşleme çalıştırın.
-3. Projeyi kaydedip paketleyin. Paket; `.rpp`, `.audub/project.json`, orijinaller, hazırlanmış take dosyaları, rapor ve ZIP içerir.
+3. Projeyi kaydedip paketleyin. Paket; taşınabilir `.rpp`, `SessionMedia/`, `.audub/project.json`, orijinaller, hazırlanmış take dosyaları, rapor ve ZIP içerir.
 
 Düzey eşitleme açıksa paket kopyaları, eşleştikleri orijinallerin FFmpeg `volumedetect` ortalama dB değerine getirilir. Kayıt tepesinin -1 dBFS’i aşmasına izin verilmez. Kaynak REAPER medyasına dokunulmaz.
 
@@ -42,7 +42,7 @@ Düzey eşitleme açıksa paket kopyaları, eşleştikleri orijinallerin FFmpeg 
 - Hazır take klasörünü dosya adına göre bağlama
 - FFmpeg ile mix split ve toplu export
 - WAV/MP3 oyun, Wwise ve master presetleri
-- Paketleme, `.rpp` kopyalama, rapor ve ZIP
+- Paketleme, `.rpp` içindeki medya yollarını `SessionMedia/` klasörüne yeniden bağlama, rapor ve ZIP
 - Orijinal ortalama dB seviyesine eşitleme ve -1 dBFS tepe koruması
 - Sağlık raporu ve işlem günlüğü
 - İsteğe bağlı yerel PIN kilidi
@@ -64,5 +64,5 @@ Yeni şema `schemaVersion: 3` kullanır. Eski Audition paketlerindeki temel `lin
 ## Bilinen sınırlar
 
 - ReaImGui zorunludur; uzantı eksikse kurulum mesajı gösterir.
-- REAPER item fade/crossfade ve item FX ayarları FFmpeg üzerinden hazırlanan take dosyasına henüz basılmaz; `.rpp` paketinde korunur.
+- REAPER item fade/crossfade ve item FX ayarları FFmpeg üzerinden hazırlanan take dosyasına henüz basılmaz; taşınabilir `.rpp` içinde korunur.
 - macOS/Linux’ta kurulum elle yapılır; Lua kodu ve FFmpeg komutları platform bağımsız hazırlanmıştır.
