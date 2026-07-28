@@ -150,7 +150,20 @@ return function(core)
       portable, portable_errors = core.make_portable_rpp(requested_rpp, report.packageRoot)
     end
 
-    report.rpp = portable and portable.path or requested_rpp
+    if requested_rpp and not portable then
+      local fallback = core.join(report.packageRoot, core.basename(requested_rpp))
+      local copied, copy_error = core.copy_file(requested_rpp, fallback)
+      if copied then
+        report.rpp = fallback
+      else
+        portable_errors = portable_errors or {}
+        portable_errors[#portable_errors+1] = 'RPP yedek kopyası oluşturulamadı: ' .. tostring(copy_error)
+        report.rpp = requested_rpp
+      end
+    else
+      report.rpp = portable and portable.path or requested_rpp
+    end
+
     report.sessionMedia = portable and portable.copiedMedia or 0
     report.rppReferencesRewritten = portable and portable.replacedReferences or 0
     report.rppWarnings = portable and portable.warnings or portable_errors or {}
