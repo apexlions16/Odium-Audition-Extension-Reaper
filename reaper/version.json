@@ -1,0 +1,6 @@
+{
+  "version": "2.0.0",
+  "channel": "reaper",
+  "notes": "İlk native REAPER portu: ReaScript/ReaImGui, timeline eşleme, paketleme, FFmpeg split/export ve düzey eşitleme.",
+  "repository": "apexlions16/Odium-Audition-Extension-Reaper"
+}
