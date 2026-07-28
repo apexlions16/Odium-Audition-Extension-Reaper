@@ -1,0 +1,122 @@
+name: Build REAPER Windows package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'reaper/**'
+      - '.github/workflows/build-reaper-windows.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reaper-v2-test-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build installer and portable ZIP
+    runs-on: windows-latest
+    env:
+      VERSION: '2.0.0'
+      RELEASE_TAG: 'v2.0.0-test.1'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Inno Setup
+        shell: powershell
+        run: choco install innosetup --yes --no-progress
+
+      - name: Prepare portable package
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $stage = Join-Path $PWD 'reaper\dist\portable\Odium REAPER'
+          New-Item -ItemType Directory -Force -Path $stage, (Join-Path $stage 'lib'), (Join-Path $stage 'tools') | Out-Null
+          Copy-Item 'reaper\Odium_Reaper_Extension.lua' $stage -Force
+          Copy-Item 'reaper\lib\*.lua' (Join-Path $stage 'lib') -Force
+          Copy-Item 'reaper\tools\Install-FFmpeg.ps1' (Join-Path $stage 'tools') -Force
+          Copy-Item 'reaper\README.md','reaper\INSTALL.bat','reaper\Install-Odium-Reaper.ps1','reaper\version.json' $stage -Force
+          $zip = Join-Path $PWD "reaper\dist\Odium-REAPER-v$env:VERSION-portable.zip"
+          Compress-Archive -Path $stage -DestinationPath $zip -Force
+
+      - name: Compile Windows installer
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path $iscc)) { throw "ISCC.exe bulunamadı: $iscc" }
+          & $iscc 'reaper\installer\OdiumReaper.iss'
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup derlemesi başarısız: $LASTEXITCODE" }
+
+      - name: Verify build outputs
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $setup = "reaper\dist\Odium-REAPER-v$env:VERSION-Setup.exe"
+          $zip = "reaper\dist\Odium-REAPER-v$env:VERSION-portable.zip"
+          foreach ($file in @($setup, $zip)) {
+            if (-not (Test-Path $file)) { throw "Build çıktısı eksik: $file" }
+            if ((Get-Item $file).Length -lt 1024) { throw "Build çıktısı şüpheli derecede küçük: $file" }
+          }
+          $hashes = foreach ($file in @($setup, $zip)) {
+            $hash = Get-FileHash $file -Algorithm SHA256
+            "$($hash.Hash)  $([IO.Path]::GetFileName($file))"
+          }
+          $hashes | Set-Content 'reaper\dist\SHA256SUMS.txt' -Encoding ascii
+          Get-ChildItem 'reaper\dist' -File | Format-Table Name,Length
+          Get-Content 'reaper\dist\SHA256SUMS.txt'
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Odium-REAPER-v2.0.0-test-build
+          path: |
+            reaper/dist/Odium-REAPER-v2.0.0-Setup.exe
+            reaper/dist/Odium-REAPER-v2.0.0-portable.zip
+            reaper/dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Write release notes
+        shell: powershell
+        run: |
+          @'
+          # Odium Studio REAPER v2.0.0 — Test Build 1
+
+          İlk native REAPER test build'idir.
+
+          ## İndirilecek dosyalar
+          - `Odium-REAPER-v2.0.0-Setup.exe`: Windows kurulum dosyası.
+          - `Odium-REAPER-v2.0.0-portable.zip`: Kurulum yapmadan elle yerleştirmek için taşınabilir paket.
+          - `SHA256SUMS.txt`: Dosya bütünlüğü doğrulama özetleri.
+
+          ## Gereksinimler
+          - REAPER 7+
+          - ReaImGui 0.10+ (ReaPack üzerinden kurulur)
+          - FFmpeg (Setup otomatik kurmayı dener)
+
+          Bu bir test/ön sürümdür. Gerçek projede denemeden önce REAPER projenizin yedeğini alın.
+          '@ | Set-Content 'release-notes.md' -Encoding utf8
+
+      - name: Create or update GitHub prerelease
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = $env:RELEASE_TAG
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title 'Odium REAPER v2.0.0 Test Build 1' --notes-file 'release-notes.md' --prerelease
+          } else {
+            gh release edit $tag --repo $env:GITHUB_REPOSITORY --notes-file 'release-notes.md' --title 'Odium REAPER v2.0.0 Test Build 1' --prerelease
+          }
+          gh release upload $tag --repo $env:GITHUB_REPOSITORY --clobber `
+            'reaper\dist\Odium-REAPER-v2.0.0-Setup.exe' `
+            'reaper\dist\Odium-REAPER-v2.0.0-portable.zip' `
+            'reaper\dist\SHA256SUMS.txt'
