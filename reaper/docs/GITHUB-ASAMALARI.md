@@ -27,13 +27,13 @@ Bu dosya REAPER portunun GitHub üzerinde görünür ilerleme kaydıdır.
 ## Aşama 5 — Kurulum ve bağımlılıklar
 
 - `%APPDATA%\REAPER\Scripts\Odium Studio` hedefli kurucu eklendi.
-- FFmpeg otomatik kurulum yardımcısı eklendi.
+- Windows kurucusu, FFmpeg yardımcısı ve taşınabilir `.rpp` için `SessionMedia` yeniden bağlama eklendi.
 - ReaImGui eksikliği kurulum ve çalışma anında açıkça raporlanır.
 
 ## Aşama 6 — Doğrulama
 
 - Lua 5.4 sözdizimi kontrolü eklendi.
-- JSON, doğal sıralama ve eski proje normalizasyonu smoke testleri eklendi.
+- JSON, doğal sıralama, eski proje normalizasyonu ve RPP medya yolu yeniden yazma smoke testleri eklendi.
 - `version.json` doğrulaması GitHub Actions iş akışına bağlandı.
 
 ## Aşama 7 — REAPER içinde kabul testi
@@ -44,6 +44,6 @@ GitHub Actions, Lua ve veri katmanını doğrular. Birleştirme öncesinde gerç
 2. Orijinalleri timeline'a yerleştirme.
 3. Pozisyon ve sıra eşleme.
 4. Çok item'lı tek replik ve boşluk koruma.
-5. `.rpp` + medya + `.audub/project.json` + ZIP paketi.
+5. Taşınabilir `.rpp` + `SessionMedia` + `.audub/project.json` + ZIP paketi.
 6. FFmpeg split/export ve düzey eşitleme.
 7. Eski Audition `project.json` paketini açma.
