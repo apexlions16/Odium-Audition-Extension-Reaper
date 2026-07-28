@@ -9,9 +9,13 @@ Bu sürüm Adobe Audition CEP paneli değildir. Uygulama, REAPER içinde çalı�
 - FFmpeg; Windows kurucusu otomatik yüklemeyi dener
 - Klasör seçim penceresi için isteğe bağlı `js_ReaScriptAPI`; yoksa yol elle girilebilir
 
+## Test build – Windows
+
+GitHub ön sürümündeki `Odium-REAPER-v2.0.0-Setup.exe` normal Windows kurucusudur. `Odium-REAPER-v2.0.0-portable.zip` ise kurulum yapmadan elle yerleştirmek için hazırlanır. Dosyaların SHA-256 değerleri aynı sürümdeki `SHA256SUMS.txt` içinde bulunur.
+
 ## Kurulum – Windows
 
-1. `INSTALL.bat` dosyasını çalıştırın.
+1. `Odium-REAPER-v2.0.0-Setup.exe` dosyasını çalıştırın veya kaynak klasördeki `INSTALL.bat` dosyasını kullanın.
 2. REAPER’da `Actions > Show action list` menüsünü açın.
 3. `New action > Load ReaScript` seçin.
 4. `%APPDATA%\REAPER\Scripts\Odium Studio\Odium_Reaper_Extension.lua` dosyasını yükleyin.
