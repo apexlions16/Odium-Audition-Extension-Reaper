@@ -10,6 +10,7 @@ local SCRIPT_DIR = SCRIPT_PATH:match('^(.*[\\/])') or './'
 local lib = SCRIPT_DIR .. 'lib' .. package.config:sub(1,1)
 local host = dofile(lib .. 'odium_reaper.lua')
 local core = host.core
+dofile(lib .. 'odium_package.lua')(core)
 
 if not reaper.ImGui_GetBuiltinPath then
   reaper.MB('Odium REAPER Uzantısı için ReaImGui gerekli. ReaPack > Browse packages içinde "ReaImGui" aratıp kurun.', 'Odium Studio', 0)
@@ -283,14 +284,15 @@ local function draw_advanced()
   if state.project then
     ImGui.SeparatorText(ctx,'Replikler')
     local max=math.min(#state.project.lines,200)
-    if ImGui.BeginChild(ctx,'lines',-1,180) then
+    local child_visible = ImGui.BeginChild(ctx,'lines',-1,180)
+    if child_visible then
       for i=1,max do
         local line=state.project.lines[i]
         local mark=(line.selectedTakePath and '✓' or line.mixStart and '◐' or '·')
         if ImGui.Selectable(ctx,string.format('%s %04d  %s',mark,i,line.originalName or line.lineId),false) then host.select_line(state.project,i) end
       end
-      ImGui.EndChild(ctx)
     end
+    ImGui.EndChild(ctx)
   end
   ImGui.SeparatorText(ctx,'Yerel erişim PIN’i')
   state.pinSetup=input_text('Yeni PIN (boş = kaldır)',state.pinSetup)
@@ -302,11 +304,12 @@ end
 
 local function draw_log()
   ImGui.SeparatorText(ctx,'İşlem günlüğü')
-  if ImGui.BeginChild(ctx,'log',-1,130) then
+  local child_visible = ImGui.BeginChild(ctx,'log',-1,130)
+  if child_visible then
     for _,line in ipairs(state.logs) do ImGui.TextWrapped(ctx,line) end
     if #state.logs>0 then ImGui.SetScrollHereY(ctx,1.0) end
-    ImGui.EndChild(ctx)
   end
+  ImGui.EndChild(ctx)
 end
 
 local open=true
@@ -327,8 +330,8 @@ local function loop()
       ImGui.TextDisabled(ctx,update_summary())
     end
     ImGui.PopFont(ctx)
-    ImGui.End(ctx)
   end
+  ImGui.End(ctx)
   if open then reaper.defer(loop) end
 end
 
