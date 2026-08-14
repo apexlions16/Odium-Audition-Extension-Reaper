@@ -18,7 +18,7 @@ local project = core.normalize_loaded_project({projectName='Test',lines={{origin
 assert(project.app == 'Odium REAPER Extension')
 assert(project.lines[1].lineId and project.lines[1].exportName == 'hello.wav')
 assert(project.exportPresetId == 'game_wav_48k_24_mono')
-assert(core.VERSION == '2.1.1')
+assert(core.VERSION == '2.1.2')
 
 -- Legacy RPP path helpers remain available for migration/backward tests, but delivery uses SESX.
 local rpp = '<SOURCE WAVE\nFILE "C:\\Audio\\line01.wav" 1\n>\nFILE "relative/line02.wav" 1\n'
