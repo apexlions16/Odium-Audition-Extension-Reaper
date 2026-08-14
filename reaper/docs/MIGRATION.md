@@ -1,43 +1,64 @@
-# Audition → REAPER geçiş notları
+# Audition ↔ REAPER geçiş notları
 
-## Mimari değişiklik
+## Güncel mimari
 
-| Eski Audition yapısı | Yeni REAPER karşılığı |
+v2.1.0 ile iş akışı tek DAW'a zorlanmaz:
+
+- **Kayıt / replik yerleştirme:** REAPER + ReaScript/ReaImGui
+- **Mix teslimi:** Adobe Audition `.sesx`
+- **Ortak veri modeli:** `.audub/project.json`
+
+| Katman | Uygulama / format |
 |---|---|
-| CEP / CEF HTML panel | ReaImGui paneli |
-| `CSXS/manifest.xml` | Action List’e kayıtlı Lua ReaScript |
-| ExtendScript `host.jsx` | Native REAPER ReaScript API çağrıları |
-| `.sesx` | `.rpp` |
-| Audition track/clip API | `MediaTrack`, `MediaItem`, `MediaItem_Take` |
-| CEP Node.js dosya sistemi | Lua `io` + REAPER dosya enumerasyonu |
-| PowerShell/Node FFmpeg scriptleri | Lua tarafından doğrudan oluşturulan FFmpeg komutları |
+| Eski panel UI | Audition CEP / CEF HTML |
+| Yeni kayıt UI | REAPER ReaImGui |
+| Eski ExtendScript host | `host.jsx` |
+| Yeni kayıt host adapter | `odium_reaper.lua` / REAPER ReaScript API |
+| Yerel kaynak proje | `.rpp` |
+| Mixçiye teslim edilen proje | `.sesx` |
+| Ortak proje metadata'sı | `.audub/project.json` |
+
+REAPER `.rpp` dosyası artık Audition'a dönüştürülmeye çalışılan bir dosya değildir; yalnız seslendirmenin yerel kaynak projesidir. Teslim sırasında Odium proje modelinden yeni bir Audition SESX session üretir.
+
+## SESX üretimi
+
+`reaper/lib/odium_sesx.lua` iki Audition audio track'i oluşturur:
+
+- `ORIGINAL_REF`: orijinal referans sesler
+- `DUB_TAKE`: REAPER'da eşlenmiş kayıtlar
+
+Dosya referansları paket köküne göre göreli yazılır. Böylece mixçi ZIP'i farklı drive/kullanıcı klasöründe açsa da session aynı paket içindeki `Audio/` medyasını kullanır.
 
 ## Veri uyumluluğu
 
-Proje modeli tamamen sıfırlanmadı. `.audub/project.json` kavramı korunarak REAPER’a özgü `schemaVersion: 3`, track adları, item kaynak offset’i, play rate ve segment bilgileri eklendi. Eski paketler yüklenirken eksik alanlar varsayılanlarla tamamlanır.
+`.audub/project.json` korunur. REAPER tarafında `schemaVersion: 3`, item kaynak offset'i, play rate ve `segments` bilgisi bulunur. SESX paket kopyasında medya yolları paket içindeki dosyalara yeniden bağlanır; eski Audition paneli temel `lines`, `takes`, `selectedTakeId`, `mixStart` ve `mixEnd` alanlarını kullanmaya devam edebilir.
 
 ## Timeline güvenliği
 
-- Orijinaller `ODIUM - Originals` track’ine yerleştirilir.
-- Kayıtlar `ODIUM - Recordings` track’inden okunur.
-- Yönetilen item’lar `P_EXT:ODIUM_ROLE` ve `P_EXT:ODIUM_LINE_ID` metadata alanlarıyla işaretlenir.
-- Temizleme yalnız Odium metadata’sı taşıyan item’lara uygulanır.
+- REAPER orijinalleri `ODIUM - Originals` track'ine yerleştirir.
+- Kayıtlar `ODIUM - Recordings` track'inden okunur.
+- Yönetilen item'lar `P_EXT:ODIUM_ROLE` ve `P_EXT:ODIUM_LINE_ID` metadata alanlarıyla işaretlenir.
+- Temizleme yalnız Odium metadata'sı taşıyan item'lara uygulanır.
 
 ## Çok parçalı kayıtlar
 
-Bir repliğe ait birden fazla kayıt item’ı `segments` dizisinde tutulur. Export sırasında her segment kendi kaynak offset’inden kesilir; item’lar arasındaki timeline boşluğu FFmpeg `anullsrc` ile yeniden oluşturulur ve `concat` ile tek dosyaya alınır.
+Bir repliğe ait birden fazla REAPER kayıt item'ı `segments` dizisinde tutulur. SESX paketi hazırlanırken her segment kaynak offset'inden kesilir; play-rate hesaba katılır ve item'lar arasındaki timeline boşluğu FFmpeg ile sessizlik olarak korunur. Sonuç Audition'ın doğrudan okuyacağı tek taşınabilir take dosyasıdır.
 
 ## Düzey eşitleme
 
-Orijinal ve kayıt dosyaları `volumedetect` ile ölçülür. Uygulanacak gain:
+Orijinal ve kayıt dosyaları `volumedetect` ile ölçülür:
 
 ```text
 hedef_gain = original_mean_dB - recording_mean_dB
 uygulanan_gain = min(hedef_gain, -1 dBFS - recording_peak_dB)
 ```
 
-Bu işlem yalnız oluşturulan paket/export kopyalarına uygulanır.
+Bu işlem yalnız SESX paketindeki take kopyasına uygulanır; REAPER kaynak kayıtlarına dokunulmaz.
 
-## Audition klasörünün durumu
+## UI yaşam döngüsü
 
-`AU-Dub-Panel/` eski kaynak karşılaştırması ve geri dönüş ihtimali için dalda tutulur; yeni README, kurucu ve çalışma yolu yalnız `reaper/` klasörünü kullanır. REAPER sürümü CEP, CSXS veya Adobe klasörlerine hiçbir şey kurmaz.
+Action List'e artık doğrudan `Odium_Reaper_Extension.lua` değil `Odium_Reaper_Launcher.lua` kaydedilir. Launcher aynı eylemin ikinci kez çalıştırılmasını engeller ve ReaImGui 0.10 `Begin/End` yaşam döngüsünü güvenli hale getirir.
+
+## Eski Audition klasörünün durumu
+
+`AU-Dub-Panel/` veri uyumluluğu ve eski paneli kullanan mixçiler için referans olarak repoda tutulur. REAPER kurucusu Adobe klasörlerine dosya yüklemez; `.sesx` teslim paketi Audition'ın açacağı normal session + medya dosyalarıdır.
