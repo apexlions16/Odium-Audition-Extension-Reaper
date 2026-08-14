@@ -3,7 +3,7 @@
 -- @author Odium Studio
 -- @about
 --   Oyun dublajı için seslendirme sanatçısı ve mixçi iş akışı.
---   Requires: REAPER 7+, ReaImGui 0.10+, FFmpeg.
+--   Requires: REAPER 6.80+, ReaImGui 0.10+, FFmpeg.
 
 local SCRIPT_PATH = debug.getinfo(1,'S').source:sub(2)
 local SCRIPT_DIR = SCRIPT_PATH:match('^(.*[\\/])') or './'
@@ -13,7 +13,7 @@ local core = host.core
 dofile(lib .. 'odium_package.lua')(core)
 
 if not reaper.ImGui_GetBuiltinPath then
-  reaper.MB('Odium REAPER Uzantısı için ReaImGui gerekli. ReaPack > Browse packages içinde "ReaImGui" aratıp kurun.', 'Odium Studio', 0)
+  reaper.MB('Odium REAPER Uzantısı için ReaImGui gerekli. Windows kurucusu bunu otomatik kurar; macOS/Linux manuel paketinde uygun binary vendor/reaimgui klasöründedir.', 'Odium Studio', 0)
   return
 end
 
@@ -150,6 +150,10 @@ local function draw_header()
   ImGui.Separator(ctx)
   ImGui.TextWrapped(ctx,state.status)
   if state.busy then ImGui.ProgressBar(ctx,state.progress,-1,4) end
+  if not state.busy and ImGui.Button(ctx,'Güncellemeleri kontrol et',-1,0) then
+    local ok, err = xpcall(function() dofile(SCRIPT_DIR .. 'Odium_Check_For_Updates.lua') end, debug.traceback)
+    if not ok then log('Güncelleme kontrolü açılamadı: '..tostring(err)) end
+  end
 end
 
 local function draw_role_chooser()
