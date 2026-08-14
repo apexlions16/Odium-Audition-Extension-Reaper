@@ -11,7 +11,7 @@ Bu paket otomatik `.pkg`/`.dmg` kurucusu değildir. Amaç, mümkün olduğunca g
 - **Eski Intel 32-bit (i386)** ReaImGui binary'si paket içinde tutulur; yalnız 32-bit uygulama çalıştırabilen eski macOS/REAPER ortamları içindir.
 - Standart ve portable/custom REAPER resource klasörleri desteklenir.
 
-Paket, ReaImGui `v0.10.0.5` için üç macOS mimarisini içerir ve build sırasında upstream SHA-256 değerleri doğrulanır.
+Paket, ReaImGui `v0.10.0.5` için üç macOS mimarisini ve sürümle eşleşen `imgui.lua` shim dosyasını içerir. Native binary ve shim build sırasında SHA-256 ile doğrulanır.
 
 ## Standart resource yolu
 
@@ -36,7 +36,7 @@ Portable/custom resource için:
 ./platform/macos/install.command "/Volumes/AudioTools/REAPER"
 ```
 
-Script Odium dosyalarını `Scripts/Odium Studio` altına, doğru ReaImGui `.dylib` dosyasını `UserPlugins` altına kopyalar. FFmpeg sistemde varsa kullanılır; yoksa yalnız FFmpeg gerektiren split/export/seviye işlemleri devre dışı kalır.
+Script Odium dosyalarını `Scripts/Odium Studio` altına, doğru ReaImGui `.dylib` dosyasını `UserPlugins` altına ve `vendor/reaimgui/api/imgui.lua` shim dosyasını `Scripts/ReaTeam Extensions/API/imgui.lua` yoluna kopyalar. FFmpeg sistemde varsa kullanılır; yoksa yalnız FFmpeg gerektiren split/export/seviye işlemleri devre dışı kalır.
 
 ## Tamamen elle kurulum
 
@@ -45,9 +45,10 @@ Script Odium dosyalarını `Scripts/Odium Studio` altına, doğru ReaImGui `.dyl
    - Apple Silicon: `reaper_imgui-arm64.dylib`
    - Intel 64-bit: `reaper_imgui-x86_64.dylib`
    - Eski Intel 32-bit: `reaper_imgui-i386.dylib`
-3. REAPER'ı tamamen kapatıp açın.
-4. `Actions > Show action list > New action > Load ReaScript` ile `Register-Odium.lua` dosyasını bir kez çalıştırın.
-5. Action List içinde ana Odium paneli ve güncelleme kontrol eylemi görünür.
+3. `vendor/reaimgui/api/imgui.lua` dosyasını `<REAPER_RESOURCE>/Scripts/ReaTeam Extensions/API/imgui.lua` yoluna kopyalayın. `API` klasörü yoksa oluşturun.
+4. REAPER'ı tamamen kapatıp açın.
+5. `Actions > Show action list > New action > Load ReaScript` ile `Register-Odium.lua` dosyasını bir kez çalıştırın.
+6. Action List içinde ana Odium paneli ve güncelleme kontrol eylemi görünür.
 
 ## FFmpeg
 
@@ -73,4 +74,4 @@ Intel kullanıyorsanız dosya adını kendi mimarinize göre değiştirin. Bu ko
 
 - Apple Silicon ve Intel binary'leri ayrı tutulur; universal tek ReaImGui dosyasına güvenilmez.
 - FFmpeg paket içine gömülmez; sistem kurulumu tercih edilir.
-- Odium'un Lua çekirdeği platformdan bağımsızdır; platforma özel bölüm esas olarak ReaImGui binary'si, dosya yolları ve shell komutlarıdır.
+- Odium'un Lua çekirdeği platformdan bağımsızdır; platforma özel bölüm esas olarak ReaImGui native binary + Lua shim, dosya yolları ve shell komutlarıdır.
