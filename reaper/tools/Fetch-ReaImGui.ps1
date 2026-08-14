@@ -7,6 +7,7 @@ $ErrorActionPreference = 'Stop'
 $Version = '0.10.0.5'
 $BaseUrl = "https://github.com/cfillion/reaimgui/releases/download/v$Version"
 $SourceBase = "https://raw.githubusercontent.com/cfillion/reaimgui/v$Version"
+$ImguiLuaSha256 = 'b73dac959d973e2d8fb47ea73588e84f81d4a3c7fb962c327d08427c2454b093'
 
 $Assets = @{
   'reaper_imgui-x64.dll'        = '800b216e0937bf5bb6b08ba2767b7b974a746b3fc3b54943b4d3011da0a68f2a'
@@ -56,6 +57,18 @@ foreach ($Name in $Wanted) {
   }
 }
 
+$ApiDir = Join-Path $Dest 'api'
+New-Item -ItemType Directory -Force -Path $ApiDir | Out-Null
+$ImguiLua = Join-Path $ApiDir 'imgui.lua'
+if (-not (Test-Path -LiteralPath $ImguiLua)) {
+  Invoke-WebRequest -UseBasicParsing -Uri "$SourceBase/shims/imgui.lua" -OutFile $ImguiLua
+}
+$ImguiLuaActual = (Get-FileHash -LiteralPath $ImguiLua -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($ImguiLuaActual -ne $ImguiLuaSha256) {
+  Remove-Item -LiteralPath $ImguiLua -Force -ErrorAction SilentlyContinue
+  throw "ReaImGui imgui.lua SHA-256 uyuşmazlığı.`nBeklenen: $ImguiLuaSha256`nGelen: $ImguiLuaActual"
+}
+
 $LicenseDir = Join-Path $Dest 'licenses'
 New-Item -ItemType Directory -Force -Path $LicenseDir | Out-Null
 foreach ($License in @('COPYING','COPYING.LESSER')) {
@@ -72,5 +85,6 @@ foreach ($License in @('COPYING','COPYING.LESSER')) {
 ReaImGui v$Version
 Kaynak: https://github.com/cfillion/reaimgui/releases/tag/v$Version
 Binary dosyalar upstream SHA-256 değerleriyle doğrulandı.
+Lua shim: api/imgui.lua ($ImguiLuaSha256)
 Lisans metinleri: licenses/COPYING ve licenses/COPYING.LESSER
 "@ | Set-Content -LiteralPath (Join-Path $Dest 'VERSION.txt') -Encoding utf8
