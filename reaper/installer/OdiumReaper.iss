@@ -74,7 +74,7 @@ var
 
 function GetResourcePath(Param: String): String;
 begin
-  { {app} is <REAPER_RESOURCE>\Scripts\Odium Studio. This also lets portable users choose their resource tree. }
+  { Install dir is the REAPER resource Scripts/Odium Studio directory. Portable users can choose their own resource tree. }
   Result := ExtractFileDir(ExtractFileDir(ExpandConstant('{app}')));
 end;
 
