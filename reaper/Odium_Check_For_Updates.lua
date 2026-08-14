@@ -69,13 +69,17 @@ local function sha256(path)
   if os_family() == 'windows' then
     local ok, out = core.run_capture('certutil -hashfile ' .. q(path) .. ' SHA256')
     if ok then
-      local compact = tostring(out or ''):gsub('%s','')
-      return compact:match('([0-9A-Fa-f][0-9A-Fa-f]+)')
+      for token in tostring(out or ''):gmatch('[0-9A-Fa-f]+') do
+        if #token == 64 then return token end
+      end
     end
   else
     local ok, out = core.run_capture('shasum -a 256 ' .. q(path))
     if not ok then ok, out = core.run_capture('sha256sum ' .. q(path)) end
-    if ok then return tostring(out or ''):match('^([0-9A-Fa-f]+)') end
+    if ok then
+      local token = tostring(out or ''):match('^([0-9A-Fa-f]+)')
+      if token and #token == 64 then return token end
+    end
   end
 end
 
