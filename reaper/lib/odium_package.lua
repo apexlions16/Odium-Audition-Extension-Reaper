@@ -67,7 +67,7 @@ return function(core)
     return rewritten, total
   end
 
-  -- v2.1.1: v2.0 kurulumundan kalan doğrudan Odium_Reaper_Extension.lua Action kaydı
+  -- v2.1.1+: v2.0 kurulumundan kalan doğrudan Odium_Reaper_Extension.lua Action kaydı
   -- çalıştırılırsa da ReaImGui 0.10 yaşam döngüsünü güvenli hale getir. Bu katman raw
   -- script require('imgui') yapmadan önce yüklenir, dolayısıyla eski Action List girdisi
   -- yeni kurucuyu beklemeden kendi kendini iyileştirebilir.
@@ -136,7 +136,7 @@ return function(core)
   migrate_legacy_action_to_launcher()
 
   dofile(base .. 'odium_sesx.lua')(core)
-  core.VERSION = '2.1.1'
+  core.VERSION = '2.1.2'
 
   -- Mevcut UI core.make_package çağırdığı için API adını koruyoruz; çıktı artık SESX'tir.
   function core.make_package(project, opts)
