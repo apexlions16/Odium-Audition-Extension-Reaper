@@ -20,6 +20,7 @@ Copy-Item -LiteralPath $Kb -Destination $Backup -Force
 
 $Lines = [System.IO.File]::ReadAllLines($Kb)
 $Filtered = @($Lines | Where-Object {
+  $_ -notmatch 'Odium_Reaper_Launcher\.lua' -and
   $_ -notmatch 'Odium_Reaper_Extension\.lua' -and
   $_ -notmatch 'Odium_Check_For_Updates\.lua'
 })
