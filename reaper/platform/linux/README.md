@@ -1,6 +1,6 @@
 # Odium REAPER — Linux manuel kurulum
 
-Bu paket Linux için açık/manual dağıtımdır; sistem paket yöneticisine müdahale etmez ve root yetkisi istemez. Odium dosyaları REAPER resource klasörüne, doğru ReaImGui binary'si `UserPlugins` altına yerleştirilir.
+Bu paket Linux için açık/manual dağıtımdır; sistem paket yöneticisine müdahale etmez ve root yetkisi istemez. Odium dosyaları REAPER resource klasörüne, doğru ReaImGui runtime'ı ilgili REAPER dizinlerine yerleştirilir.
 
 ## Destek hedefi
 
@@ -12,7 +12,7 @@ Bu paket Linux için açık/manual dağıtımdır; sistem paket yöneticisine m�
 - Standart `~/.config/REAPER` ve portable/custom resource klasörleri
 - X11 veya Wayland üzerinde REAPER'ın desteklediği masaüstü ortamları
 
-Paket ReaImGui `v0.10.0.5` için dört Linux mimarisini içerir. Binary'ler build aşamasında upstream SHA-256 değerleriyle doğrulanır.
+Paket ReaImGui `v0.10.0.5` için dört Linux mimarisini ve sürümle eşleşen `imgui.lua` shim dosyasını içerir. Native binary ve shim build aşamasında SHA-256 ile doğrulanır.
 
 ## Runtime bağımlılıkları
 
@@ -48,13 +48,16 @@ i386..i686     -> reaper_imgui-i686.so
 armv7l         -> reaper_imgui-armv7l.so
 ```
 
+Ayrıca `vendor/reaimgui/api/imgui.lua` dosyasını `<REAPER_RESOURCE>/Scripts/ReaTeam Extensions/API/imgui.lua` yoluna kurar. Odium'un ReaImGui 0.10 `require('imgui')` kullanımı için native extension ve bu shim birlikte gereklidir.
+
 ## Tamamen elle kurulum
 
 1. Odium dosyalarını `<REAPER_RESOURCE>/Scripts/Odium Studio/` altına kopyalayın.
 2. Mimarinize uygun `vendor/reaimgui/reaper_imgui-*.so` dosyasını `<REAPER_RESOURCE>/UserPlugins/` altına kopyalayın ve çalıştırma izni verin.
-3. REAPER'ı tamamen kapatıp açın.
-4. `Actions > Show action list > New action > Load ReaScript` ile `Scripts/Odium Studio/Register-Odium.lua` dosyasını bir kez çalıştırın.
-5. Ana Odium paneli ve ayrı güncelleme kontrol eylemi Action List'e kaydolur.
+3. `vendor/reaimgui/api/imgui.lua` dosyasını `<REAPER_RESOURCE>/Scripts/ReaTeam Extensions/API/imgui.lua` yoluna kopyalayın. Gerekli klasörleri oluşturun.
+4. REAPER'ı tamamen kapatıp açın.
+5. `Actions > Show action list > New action > Load ReaScript` ile `Scripts/Odium Studio/Register-Odium.lua` dosyasını bir kez çalıştırın.
+6. Ana Odium paneli ve ayrı güncelleme kontrol eylemi Action List'e kaydolur.
 
 ## FFmpeg
 
@@ -76,4 +79,4 @@ Portable kurulumlarda kesin resource klasörünü REAPER içindeki `Options > Sh
 
 ## Kaldırma
 
-Önce Action List'ten `Unregister-Odium.lua` çalıştırın. Ardından `Scripts/Odium Studio` klasörünü silebilirsiniz. `UserPlugins` altındaki ReaImGui başka ReaScript'ler tarafından da kullanılabileceği için kaldırma işlemi onu otomatik silmez.
+Önce Action List'ten `Unregister-Odium.lua` çalıştırın. Ardından `Scripts/Odium Studio` klasörünü silebilirsiniz. `UserPlugins` altındaki ReaImGui ve `Scripts/ReaTeam Extensions/API/imgui.lua` başka ReaScript'ler tarafından da kullanılabileceği için kaldırma işlemi bu ortak runtime dosyalarını otomatik silmez.
