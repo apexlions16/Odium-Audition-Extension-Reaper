@@ -1,5 +1,5 @@
 -- @description Odium Studio - Kurulum/Kayıt Bootstrap
--- @version 2.1.0
+-- @version 2.1.1
 -- @author Odium Studio
 -- @about
 --   Odium launcher'ını ve güncelleme eylemini REAPER Action List'e kaydeder.
@@ -51,7 +51,7 @@ if not ok then
 end
 
 if reaper.ImGui_GetBuiltinPath then
-  reaper.MB('Odium Studio REAPER eylemleri başarıyla kaydedildi. Ana panel şimdi açılacak.', 'Odium Studio', 0)
+  reaper.MB('Odium Studio Action List kaydı onarıldı. Eski doğrudan script kaydı kaldırıldı; güvenli launcher şimdi açılacak.', 'Odium Studio', 0)
   reaper.Main_OnCommand(result, 0)
 else
   reaper.MB('Odium Studio REAPER eylemleri başarıyla kaydedildi. ReaImGui bu REAPER oturumunda henüz yüklenmemiş görünüyor. REAPER\'ı tamamen kapatıp yeniden açın; ardından Action List içinden Odium Studio panelini çalıştırın.', 'Odium Studio', 0)
