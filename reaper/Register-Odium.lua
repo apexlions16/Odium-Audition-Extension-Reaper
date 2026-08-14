@@ -48,5 +48,9 @@ if not ok then
   return
 end
 
-reaper.MB('Odium Studio REAPER eylemleri başarıyla kaydedildi. Ana panel şimdi açılacak.', 'Odium Studio', 0)
-reaper.Main_OnCommand(result, 0)
+if reaper.ImGui_GetBuiltinPath then
+  reaper.MB('Odium Studio REAPER eylemleri başarıyla kaydedildi. Ana panel şimdi açılacak.', 'Odium Studio', 0)
+  reaper.Main_OnCommand(result, 0)
+else
+  reaper.MB('Odium Studio REAPER eylemleri başarıyla kaydedildi. ReaImGui bu REAPER oturumunda henüz yüklenmemiş görünüyor. REAPER\'ı tamamen kapatıp yeniden açın; ardından Action List içinden Odium Studio panelini çalıştırın.', 'Odium Studio', 0)
+end
