@@ -1,12 +1,12 @@
 -- @description Odium Studio - Güncelleme Kontrolü
--- @version 2.1.1
+-- @version 2.1.2
 -- @author Odium Studio
 
 local SCRIPT_PATH = debug.getinfo(1,'S').source:sub(2)
 local SCRIPT_DIR = SCRIPT_PATH:match('^(.*[\\/])') or './'
 local sep = package.config:sub(1,1)
 local core = dofile(SCRIPT_DIR .. 'lib' .. sep .. 'odium_core.lua')
-local CURRENT_VERSION = '2.1.1'
+local CURRENT_VERSION = '2.1.2'
 
 local UPDATE_MANIFEST_URL = 'https://github.com/apexlions16/Odium-Audition-Extension-Reaper/releases/latest/download/version.json'
 local RELEASE_PAGE = 'https://github.com/apexlions16/Odium-Audition-Extension-Reaper/releases/latest'
