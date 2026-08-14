@@ -36,7 +36,7 @@ jobs:
         shell: powershell
         run: choco install innosetup --yes --no-progress
 
-      - name: Fetch pinned ReaImGui Windows binaries
+      - name: Fetch pinned ReaImGui Windows runtime
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
@@ -70,22 +70,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Fetch pinned ReaImGui macOS and Linux binaries
+      - name: Fetch pinned ReaImGui macOS and Linux runtime
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           ./reaper/tools/Fetch-ReaImGui.ps1 -Dest 'reaper/vendor/reaimgui' -Platform macos
           ./reaper/tools/Fetch-ReaImGui.ps1 -Dest 'reaper/vendor/reaimgui' -Platform linux
-
-      - name: Fetch ReaImGui license texts
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p reaper/vendor/reaimgui/licenses
-          curl -fL --retry 3 -o reaper/vendor/reaimgui/licenses/COPYING \
-            https://raw.githubusercontent.com/cfillion/reaimgui/v0.10.0.5/COPYING
-          curl -fL --retry 3 -o reaper/vendor/reaimgui/licenses/COPYING.LESSER \
-            https://raw.githubusercontent.com/cfillion/reaimgui/v0.10.0.5/COPYING.LESSER
 
       - name: Stage manual packages
         shell: bash
@@ -96,7 +86,7 @@ jobs:
           LIN='reaper/dist/stage/linux/Odium REAPER'
 
           for stage in "$MAC" "$LIN"; do
-            mkdir -p "$stage/lib" "$stage/vendor/reaimgui" "$stage/THIRD_PARTY_LICENSES"
+            mkdir -p "$stage/lib" "$stage/vendor/reaimgui/api" "$stage/THIRD_PARTY_LICENSES"
             cp reaper/Odium_Reaper_Extension.lua "$stage/"
             cp reaper/Odium_Check_For_Updates.lua "$stage/"
             cp reaper/Register-Odium.lua "$stage/"
@@ -106,6 +96,7 @@ jobs:
             cp reaper/version.json "$stage/"
             cp reaper/lib/*.lua "$stage/lib/"
             cp reaper/vendor/reaimgui/VERSION.txt "$stage/vendor/reaimgui/"
+            cp reaper/vendor/reaimgui/api/imgui.lua "$stage/vendor/reaimgui/api/"
             cp reaper/vendor/reaimgui/licenses/* "$stage/THIRD_PARTY_LICENSES/"
           done
 
@@ -205,12 +196,12 @@ jobs:
           Native REAPER dağıtımının üç platform paketi:
 
           - `Odium-REAPER-Windows-Setup.exe` — Windows otomatik kurucu; Odium + ReaImGui + FFmpeg + Action List kaydı.
-          - `Odium-REAPER-macOS-manual.zip` — Apple Silicon, Intel x86_64 ve eski i386 ReaImGui binary'leriyle manuel paket.
-          - `Odium-REAPER-Linux-manual.tar.gz` — x86_64, aarch64, i686 ve armv7l ReaImGui binary'leriyle manuel paket.
+          - `Odium-REAPER-macOS-manual.zip` — Apple Silicon, Intel x86_64 ve eski i386 ReaImGui runtime'ıyla manuel paket.
+          - `Odium-REAPER-Linux-manual.tar.gz` — x86_64, aarch64, i686 ve armv7l ReaImGui runtime'ıyla manuel paket.
           - `version.json` — uygulama güncelleme manifesti ve release SHA-256 değerleri.
           - `SHA256SUMS.txt` — üç kullanıcı paketinin bütünlük özetleri.
 
-          Uyumluluk hedefi REAPER 6.80+; ReaImGui 0.10.0.5 sabitlenmiş ve upstream hash'leriyle doğrulanmıştır.
+          Uyumluluk hedefi REAPER 6.80+; ReaImGui 0.10.0.5 native binary ve `imgui.lua` shim birlikte sabitlenmiş ve hash doğrulamasıyla paketlenmiştir.
           EOF
 
       - name: Create or update GitHub release
