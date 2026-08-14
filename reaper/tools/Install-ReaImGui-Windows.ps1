@@ -6,7 +6,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $UserPlugins = Join-Path $ResourcePath 'UserPlugins'
-New-Item -ItemType Directory -Force -Path $UserPlugins | Out-Null
+$ApiPath = Join-Path $ResourcePath 'Scripts\ReaTeam Extensions\API'
+New-Item -ItemType Directory -Force -Path $UserPlugins, $ApiPath | Out-Null
 
 function Get-PeMachine([string]$Path) {
   if (-not $Path -or -not (Test-Path -LiteralPath $Path)) { return $null }
@@ -41,7 +42,15 @@ $Target = Join-Path $UserPlugins $Asset
 Copy-Item -LiteralPath $Source -Destination $Target -Force
 Write-Host "ReaImGui kuruldu: $Target" -ForegroundColor Green
 
-# Yanlış mimarinin Odium tarafından daha önce kurulmuş kopyasını temizle; başka isimli ReaImGui kurulumlarına dokunma.
+$ShimSource = Join-Path $VendorPath 'api\imgui.lua'
+if (-not (Test-Path -LiteralPath $ShimSource)) {
+  throw "ReaImGui Lua shim bulunamadı: $ShimSource"
+}
+$ShimTarget = Join-Path $ApiPath 'imgui.lua'
+Copy-Item -LiteralPath $ShimSource -Destination $ShimTarget -Force
+Write-Host "ReaImGui Lua shim kuruldu: $ShimTarget" -ForegroundColor Green
+
+# Diğer mimariye ait binary ortak bağımlılık olabilir; otomatik silinmez.
 $Other = if ($Asset -eq 'reaper_imgui-x64.dll') { 'reaper_imgui-x86.dll' } else { 'reaper_imgui-x64.dll' }
 $OtherPath = Join-Path $UserPlugins $Other
 if (Test-Path -LiteralPath $OtherPath) {
