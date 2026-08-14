@@ -39,8 +39,22 @@ if (-not (Test-Path -LiteralPath $Source)) {
 }
 
 $Target = Join-Path $UserPlugins $Asset
-Copy-Item -LiteralPath $Source -Destination $Target -Force
-Write-Host "ReaImGui kuruldu: $Target" -ForegroundColor Green
+$NeedCopy = $true
+if (Test-Path -LiteralPath $Target) {
+  $SourceHash = (Get-FileHash -LiteralPath $Source -Algorithm SHA256).Hash
+  $TargetHash = (Get-FileHash -LiteralPath $Target -Algorithm SHA256).Hash
+  if ($SourceHash -eq $TargetHash) {
+    $NeedCopy = $false
+    Write-Host "ReaImGui zaten aynı sürüm: $Target"
+  } elseif (Get-Process reaper -ErrorAction SilentlyContinue) {
+    throw 'REAPER açıkken mevcut ReaImGui DLL güncellenemiyor. REAPER\'ı tamamen kapatıp setup dosyasını tekrar çalıştırın.'
+  }
+}
+
+if ($NeedCopy) {
+  Copy-Item -LiteralPath $Source -Destination $Target -Force
+  Write-Host "ReaImGui kuruldu: $Target" -ForegroundColor Green
+}
 
 $ShimSource = Join-Path $VendorPath 'api\imgui.lua'
 if (-not (Test-Path -LiteralPath $ShimSource)) {
