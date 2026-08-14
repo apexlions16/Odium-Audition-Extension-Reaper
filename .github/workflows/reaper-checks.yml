@@ -59,4 +59,5 @@ jobs:
           set -euo pipefail
           grep -q '0.10.0.5' reaper/tools/Fetch-ReaImGui.ps1
           grep -q '800b216e0937bf5bb6b08ba2767b7b974a746b3fc3b54943b4d3011da0a68f2a' reaper/tools/Fetch-ReaImGui.ps1
+          grep -q 'b73dac959d973e2d8fb47ea73588e84f81d4a3c7fb962c327d08427c2454b093' reaper/tools/Fetch-ReaImGui.ps1
           grep -q 'db580001caa24ac104c8cb856cd113a87b0a443f7bdf47d8c12b1d740584a2ec' reaper/tools/Install-FFmpeg.ps1
