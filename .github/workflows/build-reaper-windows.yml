@@ -21,8 +21,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION: '2.1.0'
-  RELEASE_TAG: 'v2.1.0'
+  VERSION: '2.1.1'
+  RELEASE_TAG: 'v2.1.1'
 
 jobs:
   windows:
@@ -192,15 +192,15 @@ jobs:
         shell: bash
         run: |
           cat > release-notes.md <<'EOF'
-          # Odium Studio REAPER v2.1.0
+          # Odium Studio REAPER v2.1.1
 
-          Bu sürüm REAPER kayıt akışını Adobe Audition mix teslimine bağlar:
+          ReaImGui yaşam döngüsü ve yükseltme kayıt hotfix'i:
 
-          - Mixçiye gönderilen paket artık `.rpp` değil, doğrudan Adobe Audition `.sesx` session + göreli medya + `.audub/project.json` + ZIP'tir.
-          - SESX içinde `ORIGINAL_REF` ve `DUB_TAKE` track'leri hazır gelir.
-          - Çok parçalı REAPER kayıtları FFmpeg ile tek taşınabilir take'e dönüştürülür; item arası boşluklar korunur.
-          - Tek-instance launcher ikinci kez çalıştırmada yeni ReaImGui context açmaz.
-          - ReaImGui 0.10 `Begin/End` yaşam döngüsü launcher tarafından güvenli hale getirilmiştir.
+          - v2.0'dan kalmış `Odium_Reaper_Extension.lua` Action kaydı çalıştırılsa bile `ImGui_End: Calling End() too many times` hatası engellenir.
+          - Eski raw Action çalıştırıldığında Action List kaydı otomatik olarak `Odium_Reaper_Launcher.lua` girişine taşınır.
+          - Windows kurucusu Action List kaydını artık sadece ilk kurulumda değil, **her upgrade'te** onarır.
+          - Tek-instance launcher ikinci çalıştırmada ikinci ReaImGui context açmaz.
+          - Adobe Audition `.sesx` + göreli medya + `.audub/project.json` + ZIP teslim akışı korunur.
 
           Dağıtımlar:
           - `Odium-REAPER-Windows-Setup.exe` — Windows otomatik kurucu.

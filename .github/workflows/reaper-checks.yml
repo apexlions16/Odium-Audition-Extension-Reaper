@@ -24,7 +24,9 @@ jobs:
           find reaper -name '*.lua' -print0 | xargs -0 -n1 luac -p
 
       - name: Run pure Lua smoke tests
-        run: lua reaper/tests/test_core.lua
+        run: |
+          lua reaper/tests/test_core.lua
+          lua reaper/tests/test_legacy_action.lua
 
       - name: Validate ReaImGui 0.10 compatibility layer
         shell: bash
@@ -38,6 +40,26 @@ jobs:
           grep -q -F "local main_script = join(root, 'Odium_Reaper_Launcher.lua')" reaper/Register-Odium.lua
           grep -q -F 'GetToggleCommandStateEx' reaper/Odium_Reaper_Launcher.lua
           grep -q -F 'if visible then return real.End(ctx) end' reaper/Odium_Reaper_Launcher.lua
+          # v2.1.1: Eski raw Action kaydı da kendi başına güvenli çalışmalı ve launcher'a taşınmalı.
+          grep -q -F "core.basename(filename) == 'Odium_Reaper_Extension.lua'" reaper/lib/odium_package.lua
+          grep -q -F 'install_direct_imgui_compat()' reaper/lib/odium_package.lua
+          grep -q -F 'migrate_legacy_action_to_launcher()' reaper/lib/odium_package.lua
+          grep -q -F "pcall(reaper.AddRemoveReaScript, false, 0, legacy, true)" reaper/lib/odium_package.lua
+
+      - name: Validate Windows upgrade Action List repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q -F '#define AppVersion "2.1.1"' reaper/installer/OdiumReaper.iss
+          grep -q -F 'Register-Odium.lua' reaper/installer/OdiumReaper.iss
+          if grep -F 'Register-Odium.lua' reaper/installer/OdiumReaper.iss | grep -F 'Tasks: register'; then
+            echo 'Register-Odium.lua must run unconditionally on upgrades; Tasks: register is not allowed.' >&2
+            exit 1
+          fi
+          if grep -F 'Name: "register"' reaper/installer/OdiumReaper.iss | grep -F 'checkedonce'; then
+            echo 'Registration must not be a checkedonce task.' >&2
+            exit 1
+          fi
 
       - name: Validate Audition SESX delivery integration
         shell: bash
@@ -50,7 +72,9 @@ jobs:
           grep -q -F 'Odium_Reaper_Launcher.lua' reaper/installer/OdiumReaper.iss
           grep -q -F 'Odium_Reaper_Launcher.lua' reaper/platform/macos/install.command
           grep -q -F 'Odium_Reaper_Launcher.lua' reaper/platform/linux/install.sh
-          grep -q '"version": "2.1.0"' reaper/version.json
+          grep -q '"version": "2.1.1"' reaper/version.json
+          grep -q -F "core.VERSION = '2.1.1'" reaper/lib/odium_package.lua
+          grep -q -F "local CURRENT_VERSION = '2.1.1'" reaper/Odium_Check_For_Updates.lua
 
       - name: Validate JSON manifests
         run: python -m json.tool reaper/version.json >/dev/null

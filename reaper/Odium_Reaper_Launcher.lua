@@ -1,5 +1,5 @@
 -- @description Odium Studio - REAPER Dublaj Uzantısı
--- @version 2.0.0
+-- @version 2.1.1
 -- @author Odium Studio
 -- @about
 --   Tek-instance launcher ve ReaImGui 0.10 yaşam döngüsü uyumluluk katmanı.
@@ -30,8 +30,8 @@ set_running(true)
 reaper.atexit(function() set_running(false) end)
 
 -- ReaImGui 0.10 Lua örnekleri End() çağrısını yalnız Begin() true döndüğünde yapıyor.
--- Eski ana UI dosyası End() çağrısını koşul dışında yaptığı için görünmez/yeniden açılan
--- frame'lerde context bozulabiliyordu. Ana dosyaya dokunmadan küçük bir proxy ile düzelt.
+-- Ana UI dosyası End() çağrısını koşul dışında yaptığı için görünmez/yeniden açılan
+-- frame'lerde context bozulabiliyordu. Launcher bunu proxy ile güvenli hale getirir.
 package.path = reaper.ImGui_GetBuiltinPath() .. '/?.lua;' .. package.path
 local ok_factory, factory = pcall(require, 'imgui')
 if not ok_factory then

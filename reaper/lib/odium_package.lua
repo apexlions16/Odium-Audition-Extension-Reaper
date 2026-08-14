@@ -67,8 +67,76 @@ return function(core)
     return rewritten, total
   end
 
+  -- v2.1.1: v2.0 kurulumundan kalan doğrudan Odium_Reaper_Extension.lua Action kaydı
+  -- çalıştırılırsa da ReaImGui 0.10 yaşam döngüsünü güvenli hale getir. Bu katman raw
+  -- script require('imgui') yapmadan önce yüklenir, dolayısıyla eski Action List girdisi
+  -- yeni kurucuyu beklemeden kendi kendini iyileştirebilir.
+  local legacy_action_running = false
+  if reaper and reaper.get_action_context then
+    local ok, _, filename = pcall(reaper.get_action_context)
+    if ok and filename and core.basename(filename) == 'Odium_Reaper_Extension.lua' then
+      legacy_action_running = true
+    end
+  end
+
+  local function install_direct_imgui_compat()
+    if not legacy_action_running or not reaper or not reaper.ImGui_GetBuiltinPath then return end
+    package.path = reaper.ImGui_GetBuiltinPath() .. '/?.lua;' .. package.path
+    local ok_factory, factory = pcall(require, 'imgui')
+    if not ok_factory or type(factory) ~= 'function' then return end
+
+    local real = factory('0.10')
+    local begin_visible = setmetatable({}, {__mode='k'})
+    local proxy = setmetatable({}, {__index=real})
+
+    proxy.Begin = function(ctx, ...)
+      local visible, open = real.Begin(ctx, ...)
+      begin_visible[ctx] = visible and true or false
+      return visible, open
+    end
+
+    proxy.End = function(ctx)
+      local visible = begin_visible[ctx]
+      begin_visible[ctx] = nil
+      if visible then return real.End(ctx) end
+    end
+
+    proxy.Button = function(ctx, label, ...)
+      if label == 'Projeyi kaydet + .rpp ile paketle + ZIP' then
+        label = 'Adobe Audition .sesx paketi + ZIP oluştur'
+      end
+      return real.Button(ctx, label, ...)
+    end
+
+    package.loaded.imgui = function(version)
+      if tostring(version or '') == '0.10' then return proxy end
+      return factory(version)
+    end
+  end
+
+  local function migrate_legacy_action_to_launcher()
+    if not legacy_action_running or not reaper or not reaper.AddRemoveReaScript then return end
+    local lib_dir = base:gsub('[\\/]+$', '')
+    local root = core.dirname(lib_dir)
+    local legacy = core.join(root, 'Odium_Reaper_Extension.lua')
+    local launcher = core.join(root, 'Odium_Reaper_Launcher.lua')
+    if not core.file_exists(launcher) then return end
+
+    -- Çalışmakta olan legacy scripti etkilemeden Action List'teki eski yolu kaldır.
+    pcall(reaper.AddRemoveReaScript, false, 0, legacy, true)
+    local ok, command_id = pcall(reaper.AddRemoveReaScript, true, 0, launcher, true)
+    if ok and command_id and command_id ~= 0 then
+      reaper.SetExtState('OdiumReaper', 'MAIN_COMMAND_ID', tostring(command_id), true)
+      reaper.SetExtState('OdiumReaper', 'MAIN_COMMAND_ID_PATH', launcher, true)
+      reaper.SetExtState('OdiumReaper', 'INSTALL_ROOT', root .. package.config:sub(1,1), true)
+    end
+  end
+
+  install_direct_imgui_compat()
+  migrate_legacy_action_to_launcher()
+
   dofile(base .. 'odium_sesx.lua')(core)
-  core.VERSION = '2.1.0'
+  core.VERSION = '2.1.1'
 
   -- Mevcut UI core.make_package çağırdığı için API adını koruyoruz; çıktı artık SESX'tir.
   function core.make_package(project, opts)

@@ -2,7 +2,7 @@
 ; Windows per-user one-click installer, built with Inno Setup 6.
 
 #define AppName "Odium Studio - REAPER Dublaj Uzantısı"
-#define AppVersion "2.1.0"
+#define AppVersion "2.1.1"
 #define AppPublisher "Odium Studio"
 #define AppId "{{C1E0579A-6A8B-4E88-A1B0-0D2F3BC56A15}"
 
@@ -39,7 +39,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "reaimgui"; Description: "ReaImGui 0.10.0.5'i REAPER UserPlugins klasörüne kur"; GroupDescription: "Bağımlılıklar:"; Flags: checkedonce
 Name: "ffmpeg"; Description: "FFmpeg'i doğrulanmış sabit paketten Odium klasörüne kur (SESX take hazırlama için önerilir)"; GroupDescription: "Bağımlılıklar:"; Flags: checkedonce
-Name: "register"; Description: "Odium güvenli launcher'ını REAPER Action List'e otomatik kaydet ve paneli aç"; GroupDescription: "REAPER entegrasyonu:"; Flags: checkedonce
 Name: "openreadme"; Description: "Kurulumdan sonra kullanım rehberini aç"; GroupDescription: "İsteğe bağlı işlemler:"; Flags: unchecked
 
 [Files]
@@ -62,7 +61,8 @@ Source: "..\version.json"; DestDir: "{app}"; Flags: ignoreversion
 [Run]
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\tools\Install-ReaImGui-Windows.ps1"" -ResourcePath ""{code:GetResourcePath}"" -VendorPath ""{app}\vendor\reaimgui"" -ReaperExe ""{code:GetReaperExe}"""; StatusMsg: "ReaImGui kuruluyor..."; Flags: runhidden waituntilterminated; Tasks: reaimgui
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\tools\Install-FFmpeg.ps1"" -Dest ""{app}\tools"""; StatusMsg: "FFmpeg indiriliyor ve doğrulanıyor..."; Flags: runhidden waituntilterminated; Tasks: ffmpeg
-Filename: "{code:GetReaperExe}"; Parameters: "-nonewinst ""{app}\Register-Odium.lua"""; StatusMsg: "Odium REAPER Action List'e kaydediliyor..."; Flags: nowait; Tasks: register; Check: HasReaperExe
+; Action List kaydı upgrade'lerde de HER ZAMAN onarılır. v2.1.0'da checkedonce yüzünden eski raw action kalabiliyordu.
+Filename: "{code:GetReaperExe}"; Parameters: "-nonewinst ""{app}\Register-Odium.lua"""; StatusMsg: "Odium REAPER Action List kaydı onarılıyor..."; Flags: nowait; Check: HasReaperExe
 Filename: "{sys}\notepad.exe"; Parameters: """{app}\README.md"""; Description: "Kullanım rehberini aç"; Flags: postinstall nowait skipifsilent; Tasks: openreadme
 
 [UninstallRun]
