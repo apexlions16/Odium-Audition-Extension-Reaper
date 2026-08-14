@@ -18,6 +18,65 @@ return function(core)
     return s ~= '' and s or 'audio.wav'
   end
 
+  local function item_ext(item, key)
+    local _, value = reaper.GetSetMediaItemInfo_String(item, 'P_EXT:' .. key, '', false)
+    return value or ''
+  end
+
+  local function track_name(track)
+    local _, value = reaper.GetSetMediaTrackInfo_String(track, 'P_NAME', '', false)
+    return value or ''
+  end
+
+  local function source_path(take)
+    if not take then return '' end
+    local source = reaper.GetMediaItemTake_Source(take)
+    if not source then return '' end
+    local _, path = reaper.GetMediaSourceFileName(source, '')
+    return path or ''
+  end
+
+  local function snapshot_live_recordings(project)
+    if not reaper or not reaper.CountTracks then return {} end
+    local wanted_name = project and project.tracks and project.tracks.recordings or 'ODIUM - Recordings'
+    local recording_track = nil
+    for i=0,reaper.CountTracks(0)-1 do
+      local track = reaper.GetTrack(0, i)
+      local _, role = reaper.GetSetMediaTrackInfo_String(track, 'P_EXT:ODIUM_ROLE', '', false)
+      if role == 'recordings' or track_name(track) == wanted_name or track_name(track) == 'ODIUM - Recordings' then
+        recording_track = track
+        break
+      end
+    end
+    if not recording_track then return {} end
+
+    local items = {}
+    for i=0,reaper.CountTrackMediaItems(recording_track)-1 do
+      local item = reaper.GetTrackMediaItem(recording_track, i)
+      local take = reaper.GetActiveTake(item)
+      local path = source_path(take)
+      if take and path ~= '' then
+        local pos = tonumber(reaper.GetMediaItemInfo_Value(item, 'D_POSITION')) or 0
+        local len = tonumber(reaper.GetMediaItemInfo_Value(item, 'D_LENGTH')) or 0
+        local _, name = reaper.GetSetMediaItemTakeInfo_String(take, 'P_NAME', '', false)
+        local line_id = item_ext(item, 'ODIUM_LINE_ID')
+        items[#items+1] = {
+          timelineStart = pos,
+          timelineEnd = pos + len,
+          duration = len,
+          name = (name and name ~= '') and name or core.basename(path),
+          filePath = path,
+          sourceStart = tonumber(reaper.GetMediaItemTakeInfo_Value(take, 'D_STARTOFFS')) or 0,
+          playRate = tonumber(reaper.GetMediaItemTakeInfo_Value(take, 'D_PLAYRATE')) or 1,
+          lineId = line_id ~= '' and line_id or nil,
+          sourceKind = 'reaper_recording_item'
+        }
+      end
+    end
+    table.sort(items, function(a,b) return a.timelineStart < b.timelineStart end)
+    return items
+  end
+
   local function add_file(manifest, relative_path)
     local key = tostring(relative_path or ''):lower():gsub('\\','/')
     if manifest.fileIds[key] ~= nil then return manifest.fileIds[key] end
@@ -135,6 +194,7 @@ return function(core)
 
     local ffmpeg = opts.ffmpeg
     local recording_items = deep_copy(opts.recordingItems or {})
+    if #recording_items == 0 then recording_items = snapshot_live_recordings(project) end
     local packaged = deep_copy(project)
     packaged.app = 'Odium REAPER Extension -> Adobe Audition SESX'
     packaged.packageFormat = 'sesx'
@@ -156,7 +216,6 @@ return function(core)
     for _, line in ipairs(project.lines) do if line.lineId then lines_by_id[line.lineId] = line end end
     for _, item in ipairs(recording_items) do if item.lineId and item.lineId ~= '' then snapshot_line_ids[item.lineId] = true end end
 
-    -- Originals always come from the Odium line model.
     for i, line in ipairs(project.lines) do
       local pline = packaged.lines[i]
       local src = line.originalAbsolutePath
@@ -178,7 +237,6 @@ return function(core)
         report.missingOriginals[#report.missingOriginals+1] = line.originalName or line.lineId
       end
 
-      -- If the live Recording snapshot covers this line, the exact track items below are authoritative.
       local live_covers_line = #recording_items > 0 and (snapshot_line_ids[line.lineId] or (line.segments and #line.segments > 0))
       if not live_covers_line then
         local take, err = render_or_copy_line_take(line, i, root, ffmpeg, opts.levelMatchOriginal, preset)
@@ -193,7 +251,7 @@ return function(core)
       end
     end
 
-    -- Live Recording track: every active item becomes an Audition DUB_TAKE clip at the exact REAPER timeline position.
+    -- Her aktif Recording item, REAPER'daki gerçek zaman konumunda ayrı bir Audition clip olur.
     for i, item in ipairs(recording_items) do
       local src = item.filePath
       local start = tonumber(item.timelineStart) or 0
