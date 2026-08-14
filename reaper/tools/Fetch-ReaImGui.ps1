@@ -6,6 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $Version = '0.10.0.5'
 $BaseUrl = "https://github.com/cfillion/reaimgui/releases/download/v$Version"
+$SourceBase = "https://raw.githubusercontent.com/cfillion/reaimgui/v$Version"
 
 $Assets = @{
   'reaper_imgui-x64.dll'        = '800b216e0937bf5bb6b08ba2767b7b974a746b3fc3b54943b4d3011da0a68f2a'
@@ -55,8 +56,21 @@ foreach ($Name in $Wanted) {
   }
 }
 
+$LicenseDir = Join-Path $Dest 'licenses'
+New-Item -ItemType Directory -Force -Path $LicenseDir | Out-Null
+foreach ($License in @('COPYING','COPYING.LESSER')) {
+  $LicensePath = Join-Path $LicenseDir $License
+  if (-not (Test-Path -LiteralPath $LicensePath)) {
+    Invoke-WebRequest -UseBasicParsing -Uri "$SourceBase/$License" -OutFile $LicensePath
+  }
+  if ((Get-Item -LiteralPath $LicensePath).Length -lt 1000) {
+    throw "ReaImGui lisans dosyası geçersiz veya eksik: $License"
+  }
+}
+
 @"
 ReaImGui v$Version
 Kaynak: https://github.com/cfillion/reaimgui/releases/tag/v$Version
 Binary dosyalar upstream SHA-256 değerleriyle doğrulandı.
+Lisans metinleri: licenses/COPYING ve licenses/COPYING.LESSER
 "@ | Set-Content -LiteralPath (Join-Path $Dest 'VERSION.txt') -Encoding utf8
