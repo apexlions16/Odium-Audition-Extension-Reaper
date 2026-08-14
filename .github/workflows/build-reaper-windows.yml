@@ -21,8 +21,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION: '2.1.2'
-  RELEASE_TAG: 'v2.1.2'
+  VERSION: '2.1.3'
+  RELEASE_TAG: 'v2.1.3'
 
 jobs:
   windows:
@@ -192,15 +192,16 @@ jobs:
         shell: bash
         run: |
           cat > release-notes.md <<'EOF'
-          # Odium Studio REAPER v2.1.2
+          # Odium Studio REAPER v2.1.3
 
-          Pencere görünürlüğü ve stale "çalışıyor" durumu hotfix'i:
+          Recording track -> Adobe Audition SESX düzeltmesi:
 
-          - Launcher artık sadece Action toggle state'e güvenmez; yaşayan UI her frame kısa süreli bir lease/heartbeat yeniler.
-          - Crash/abort sonrası kalan sahte "Odium zaten açık" durumu lease süresi dolunca otomatik temizlenir.
-          - Odium gerçekten açıksa Action'a ikinci kez basmak yeni context açmaz; mevcut pencereye focus isteği yollar.
-          - Pencere başka monitörde veya ekran dışında kaldıysa REAPER'ın ana viewport'una geri taşınır ve collapse durumundan çıkarılır.
-          - v2.1.1 eski raw Action / End() koruması ve Adobe Audition `.sesx` + medya + ZIP teslim akışı korunur.
+          - Paketleme artık `ODIUM - Recordings` track'ini paketleme anında doğrudan tarar.
+          - `project.json` içinde selected take olmasa bile aktif REAPER Recording item'ları `DUB_TAKE` track'ine eklenir.
+          - Her kayıt item'ının timeline konumu, trim/source offset'i, uzunluğu ve play-rate bilgisi korunur.
+          - Kayıt medyaları `Audio/Takes` içine taşınır; paketlenmiş item listesi `.audub/project.json` içindeki `recordingItems` alanına yazılır.
+          - FFmpeg varsa trim/play-rate render edilir; FFmpeg yoksa 1x play-rate item'larda kaynak dosya ve SESX source offset kullanılır.
+          - v2.1.2 launcher heartbeat/off-screen pencere düzeltmeleri korunur.
 
           Dağıtımlar:
           - `Odium-REAPER-Windows-Setup.exe` — Windows otomatik kurucu.

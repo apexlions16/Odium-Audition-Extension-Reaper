@@ -91,10 +91,57 @@ function H.scan_track(track)
       sourceStart = reaper.GetMediaItemTakeInfo_Value(take,'D_STARTOFFS') or 0
       playRate = reaper.GetMediaItemTakeInfo_Value(take,'D_PLAYRATE') or 1
     end
-    items[#items+1] = {item=item,take=take,pos=pos,len=len,finish=pos+len,name=name,path=source_path(take),sourceStart=sourceStart,playRate=playRate}
+    items[#items+1] = {
+      item=item, take=take, pos=pos, len=len, finish=pos+len,
+      name=name, path=source_path(take), sourceStart=sourceStart, playRate=playRate,
+      lineId=item_ext(item,'ODIUM_LINE_ID'), odiumRole=item_ext(item,'ODIUM_ROLE')
+    }
   end
   table.sort(items,function(a,b) return a.pos<b.pos end)
   return items
+end
+
+-- Paketleme anında gerçek Recording track'ini seri hale getir. SESX exporter bu snapshot'ı
+-- project.json'daki eski/stale selectedTakePath verisinden daha yetkili kabul eder.
+function H.snapshot_recordings(project)
+  local track_name_hint = project and project.tracks and project.tracks.recordings or 'ODIUM - Recordings'
+  local tr = H.find_track('recordings') or H.find_track(track_name_hint)
+  if not tr then return {} end
+  local out = {}
+  for _, it in ipairs(H.scan_track(tr)) do
+    if it.take and it.path and it.path ~= '' then
+      out[#out+1] = {
+        timelineStart = it.pos,
+        timelineEnd = it.finish,
+        duration = it.len,
+        name = it.name ~= '' and it.name or core.basename(it.path),
+        filePath = it.path,
+        sourceStart = it.sourceStart,
+        playRate = it.playRate,
+        lineId = it.lineId ~= '' and it.lineId or nil,
+        sourceKind = 'reaper_recording_item'
+      }
+    end
+  end
+  return out
+end
+
+local function clear_previous_reaper_match(line)
+  local selected_kind = nil
+  for _, take in ipairs(line.takes or {}) do
+    if take.takeId == line.selectedTakeId then selected_kind = take.sourceKind end
+  end
+  local kept = {}
+  for _, take in ipairs(line.takes or {}) do
+    if take.sourceKind ~= 'reaper_track' then kept[#kept+1] = take end
+  end
+  line.takes = kept
+  if selected_kind == 'reaper_track' or line.status == 'take_matched' then
+    line.selectedTakeId, line.selectedTakePath = nil, nil
+    line.mixStart, line.mixEnd = nil, nil
+    line.segments = {}
+    line.status = 'original_ready'
+  end
 end
 
 function H.match_recordings(project, mode)
@@ -102,6 +149,7 @@ function H.match_recordings(project, mode)
   if not tr then error('Kayıt track’i bulunamadı.') end
   local items = H.scan_track(tr)
   local matched = 0
+  for _, line in ipairs(project.lines) do clear_previous_reaper_match(line) end
   for i,line in ipairs(project.lines) do
     local region_start = line.timelineStart
     local next_line = project.lines[i+1]
@@ -119,11 +167,15 @@ function H.match_recordings(project, mode)
       local first,last=group[1],group[#group]
       line.mixStart, line.mixEnd = first.pos, last.finish
       line.segments = {}
-      for _,it in ipairs(group) do line.segments[#line.segments+1]={start=it.pos, finish=it.finish, duration=it.len, filePath=it.path, name=it.name, sourceStart=it.sourceStart, playRate=it.playRate} end
+      for _,it in ipairs(group) do
+        line.segments[#line.segments+1]={start=it.pos, finish=it.finish, duration=it.len, filePath=it.path, name=it.name, sourceStart=it.sourceStart, playRate=it.playRate}
+      end
       local selected=group[1]
       local id=core.uid('take')
-      line.takes=line.takes or {}; line.takes[#line.takes+1]={takeId=id,fileName=core.basename(selected.path),absolutePath=selected.path,sourceKind='reaper_track',createdAt=core.iso_now()}
-      line.selectedTakeId,line.selectedTakePath=id,selected.path; line.status='take_matched'; matched=matched+1
+      line.takes=line.takes or {}
+      line.takes[#line.takes+1]={takeId=id,fileName=core.basename(selected.path),absolutePath=selected.path,sourceKind='reaper_track',createdAt=core.iso_now()}
+      line.selectedTakeId,line.selectedTakePath=id,selected.path
+      line.status='take_matched'; matched=matched+1
       for _,it in ipairs(group) do item_ext(it.item,'ODIUM_LINE_ID',line.lineId); item_ext(it.item,'ODIUM_ROLE','recording') end
     end
   end
@@ -154,6 +206,7 @@ function H.match_recordings_on_track(project, track)
       line.mixStart=group[1].pos; line.mixEnd=group[#group].finish; line.segments={}
       for _,it in ipairs(group) do line.segments[#line.segments+1]={start=it.pos,finish=it.finish,duration=it.len,filePath=it.path,name=it.name,sourceStart=it.sourceStart,playRate=it.playRate} end
       local id=core.uid('take'); line.takes={{takeId=id,fileName=core.basename(group[1].path),absolutePath=group[1].path,sourceKind='reaper_track',createdAt=core.iso_now()}}; line.selectedTakeId=id; line.selectedTakePath=group[1].path; matched=matched+1
+      for _,it in ipairs(group) do item_ext(it.item,'ODIUM_LINE_ID',line.lineId); item_ext(it.item,'ODIUM_ROLE','recording') end
     end
   end
   return matched

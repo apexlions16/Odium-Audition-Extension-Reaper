@@ -2,7 +2,7 @@
 ; Windows per-user one-click installer, built with Inno Setup 6.
 
 #define AppName "Odium Studio - REAPER Dublaj Uzantısı"
-#define AppVersion "2.1.2"
+#define AppVersion "2.1.3"
 #define AppPublisher "Odium Studio"
 #define AppId "{{C1E0579A-6A8B-4E88-A1B0-0D2F3BC56A15}"
 

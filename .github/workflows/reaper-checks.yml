@@ -28,6 +28,7 @@ jobs:
           lua reaper/tests/test_core.lua
           lua reaper/tests/test_legacy_action.lua
           lua reaper/tests/test_launcher_lease.lua
+          lua reaper/tests/test_recording_track_sesx.lua
 
       - name: Validate ReaImGui 0.10 compatibility layer
         shell: bash
@@ -41,7 +42,6 @@ jobs:
           grep -q -F "local main_script = join(root, 'Odium_Reaper_Launcher.lua')" reaper/Register-Odium.lua
           grep -q -F 'GetToggleCommandStateEx' reaper/Odium_Reaper_Launcher.lua
           grep -q -F 'if visible then return real.End(ctx) end' reaper/Odium_Reaper_Launcher.lua
-          # v2.1.1+: Eski raw Action kaydı da kendi başına güvenli çalışmalı ve launcher'a taşınmalı.
           grep -q -F "core.basename(filename) == 'Odium_Reaper_Extension.lua'" reaper/lib/odium_package.lua
           grep -q -F 'install_direct_imgui_compat()' reaper/lib/odium_package.lua
           grep -q -F 'migrate_legacy_action_to_launcher()' reaper/lib/odium_package.lua
@@ -63,7 +63,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -q -F '#define AppVersion "2.1.2"' reaper/installer/OdiumReaper.iss
+          grep -q -F '#define AppVersion "2.1.3"' reaper/installer/OdiumReaper.iss
           grep -q -F 'Register-Odium.lua' reaper/installer/OdiumReaper.iss
           if grep -F 'Register-Odium.lua' reaper/installer/OdiumReaper.iss | grep -F 'Tasks: register'; then
             echo 'Register-Odium.lua must run unconditionally on upgrades; Tasks: register is not allowed.' >&2
@@ -79,15 +79,20 @@ jobs:
         run: |
           set -euo pipefail
           test -s reaper/lib/odium_sesx.lua
-          grep -q -F "return core.make_audition_package" reaper/lib/odium_package.lua
+          test -s reaper/lib/odium_sesx_recordings.lua
+          test -s reaper/tests/test_recording_track_sesx.lua
+          grep -q -F "dofile(base .. 'odium_sesx_recordings.lua')(core)" reaper/lib/odium_package.lua
+          grep -q -F 'snapshot_live_recordings(project)' reaper/lib/odium_sesx_recordings.lua
+          grep -q -F "track_name(track) == 'ODIUM - Recordings'" reaper/lib/odium_sesx_recordings.lua
+          grep -q -F "sourceKind = 'reaper_recording_item'" reaper/lib/odium_sesx_recordings.lua
           grep -q -F "'ORIGINAL_REF'" reaper/lib/odium_sesx.lua
           grep -q -F "'DUB_TAKE'" reaper/lib/odium_sesx.lua
           grep -q -F 'Odium_Reaper_Launcher.lua' reaper/installer/OdiumReaper.iss
           grep -q -F 'Odium_Reaper_Launcher.lua' reaper/platform/macos/install.command
           grep -q -F 'Odium_Reaper_Launcher.lua' reaper/platform/linux/install.sh
-          grep -q '"version": "2.1.2"' reaper/version.json
-          grep -q -F "core.VERSION = '2.1.2'" reaper/lib/odium_package.lua
-          grep -q -F "local CURRENT_VERSION = '2.1.2'" reaper/Odium_Check_For_Updates.lua
+          grep -q '"version": "2.1.3"' reaper/version.json
+          grep -q -F "core.VERSION = '2.1.3'" reaper/lib/odium_package.lua
+          grep -q -F "local CURRENT_VERSION = '2.1.3'" reaper/Odium_Check_For_Updates.lua
 
       - name: Validate JSON manifests
         run: python -m json.tool reaper/version.json >/dev/null
@@ -122,5 +127,5 @@ jobs:
           set -euo pipefail
           grep -q '0.10.0.5' reaper/tools/Fetch-ReaImGui.ps1
           grep -q '800b216e0937bf5bb6b08ba2767b7b974a746b3fc3b54943b4d3011da0a68f2a' reaper/tools/Fetch-ReaImGui.ps1
-          grep -q 'b73dac959d973e2d8fb47ea73588e84f81d4a3fc7fb962c327d08427c2454b093' reaper/tools/Fetch-ReaImGui.ps1 || grep -q 'b73dac959d973e2d8fb47ea73588e84f81d4a3c7fb962c327d08427c2454b093' reaper/tools/Fetch-ReaImGui.ps1
+          grep -q 'b73dac959d973e2d8fb47ea73588e84f81d4a3c7fb962c327d08427c2454b093' reaper/tools/Fetch-ReaImGui.ps1
           grep -q 'db580001caa24ac104c8cb856cd113a87b0a443f7bdf47d8c12b1d740584a2ec' reaper/tools/Install-FFmpeg.ps1
