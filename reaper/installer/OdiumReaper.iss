@@ -52,6 +52,7 @@ Source: "..\tools\*.ps1"; DestDir: "{app}\tools"; Flags: ignoreversion
 Source: "..\vendor\reaimgui\reaper_imgui-x64.dll"; DestDir: "{app}\vendor\reaimgui"; Flags: ignoreversion
 Source: "..\vendor\reaimgui\reaper_imgui-x86.dll"; DestDir: "{app}\vendor\reaimgui"; Flags: ignoreversion
 Source: "..\vendor\reaimgui\VERSION.txt"; DestDir: "{app}\vendor\reaimgui"; Flags: ignoreversion
+Source: "..\vendor\reaimgui\licenses\*"; DestDir: "{app}\THIRD_PARTY_LICENSES"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\THIRD_PARTY_NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\version.json"; DestDir: "{app}"; Flags: ignoreversion
