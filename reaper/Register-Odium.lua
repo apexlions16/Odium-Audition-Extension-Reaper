@@ -1,8 +1,8 @@
 -- @description Odium Studio - Kurulum/Kayıt Bootstrap
--- @version 2.0.0
+-- @version 2.1.0
 -- @author Odium Studio
 -- @about
---   Odium ana panelini ve güncelleme eylemini REAPER Action List'e kaydeder.
+--   Odium launcher'ını ve güncelleme eylemini REAPER Action List'e kaydeder.
 
 local function script_dir()
   local src = debug.getinfo(1, 'S').source
@@ -16,7 +16,8 @@ local function join(a, b)
 end
 
 local root = script_dir()
-local main_script = join(root, 'Odium_Reaper_Extension.lua')
+local main_script = join(root, 'Odium_Reaper_Launcher.lua')
+local legacy_main_script = join(root, 'Odium_Reaper_Extension.lua')
 local update_script = join(root, 'Odium_Check_For_Updates.lua')
 
 if not reaper.AddRemoveReaScript then
@@ -25,7 +26,6 @@ if not reaper.AddRemoveReaScript then
 end
 
 local function register(path, state_key)
-  -- Idempotent kurulum: aynı yolu önce kaldırmayı dener, sonra yeniden ekler.
   pcall(reaper.AddRemoveReaScript, false, 0, path, true)
   local command_id = reaper.AddRemoveReaScript(true, 0, path, true)
   if not command_id or command_id == 0 then
@@ -37,6 +37,8 @@ local function register(path, state_key)
 end
 
 local ok, result = xpcall(function()
+  -- Eski doğrudan UI kaydını kaldır; kullanıcı her zaman güvenli launcher üzerinden açsın.
+  pcall(reaper.AddRemoveReaScript, false, 0, legacy_main_script, true)
   local main_id = register(main_script, 'MAIN_COMMAND_ID')
   register(update_script, 'UPDATE_COMMAND_ID')
   reaper.SetExtState('OdiumReaper', 'INSTALL_ROOT', root, true)

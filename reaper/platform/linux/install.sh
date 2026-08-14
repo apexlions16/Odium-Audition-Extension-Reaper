@@ -13,7 +13,7 @@ printf 'REAPER resource: %s\n\n' "$RESOURCE"
 
 mkdir -p "$DEST/lib" "$DEST/tools" "$DEST/vendor/reaimgui" "$USERPLUGINS" "$IMGUI_API"
 
-for f in Odium_Reaper_Extension.lua Odium_Check_For_Updates.lua Register-Odium.lua Unregister-Odium.lua README.md version.json THIRD_PARTY_NOTICES.md; do
+for f in Odium_Reaper_Launcher.lua Odium_Reaper_Extension.lua Odium_Check_For_Updates.lua Register-Odium.lua Unregister-Odium.lua README.md version.json THIRD_PARTY_NOTICES.md; do
   [[ -f "$ROOT/$f" ]] && cp -f "$ROOT/$f" "$DEST/$f"
 done
 cp -f "$ROOT"/lib/*.lua "$DEST/lib/"
@@ -67,7 +67,7 @@ else
   echo "Debian/Ubuntu: sudo apt install ffmpeg"
   echo "Fedora/RHEL türevleri: dağıtımınızın FFmpeg paketini kurun."
   echo "Arch: sudo pacman -S ffmpeg"
-  echo "FFmpeg olmadan timeline/JSON özellikleri çalışır; mix split, export ve seviye eşitleme çalışmaz."
+  echo "FFmpeg olmadan çok parçalı kayıtları Audition SESX paketine flatten etme ve düzey eşitleme çalışmaz."
 fi
 
 cat <<EOF
@@ -79,7 +79,8 @@ Son manuel kayıt adımı:
 2. Actions > Show action list > New action > Load ReaScript
 3. Şu dosyayı bir kez seçin:
    $DEST/Register-Odium.lua
-4. Register script ana paneli ve "Odium Studio - Güncelleme Kontrolü" eylemini kaydeder.
+4. Register script güvenli tek-instance launcher'ı ve "Odium Studio - Güncelleme Kontrolü" eylemini kaydeder.
+5. Mix tesliminde Odium Adobe Audition .sesx + medya + ZIP üretir; .rpp yalnız yerel REAPER kaynak projesidir.
 
 Portable/custom REAPER resource klasörü kullanıyorsanız:
   ./install.sh "/path/to/REAPER-resource"

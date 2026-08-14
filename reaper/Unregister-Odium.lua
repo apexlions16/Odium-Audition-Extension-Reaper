@@ -1,5 +1,5 @@
 -- @description Odium Studio - Action List Kaydını Kaldır
--- @version 2.0.0
+-- @version 2.1.0
 -- @author Odium Studio
 
 local function script_dir()
@@ -17,6 +17,7 @@ local root = reaper.GetExtState('OdiumReaper', 'INSTALL_ROOT')
 if root == '' then root = script_dir() end
 
 local targets = {
+  join(root, 'Odium_Reaper_Launcher.lua'),
   join(root, 'Odium_Reaper_Extension.lua'),
   join(root, 'Odium_Check_For_Updates.lua')
 }

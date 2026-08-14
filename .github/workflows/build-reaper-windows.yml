@@ -21,8 +21,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION: '2.0.0'
-  RELEASE_TAG: 'v2.0.0'
+  VERSION: '2.1.0'
+  RELEASE_TAG: 'v2.1.0'
 
 jobs:
   windows:
@@ -87,6 +87,7 @@ jobs:
 
           for stage in "$MAC" "$LIN"; do
             mkdir -p "$stage/lib" "$stage/vendor/reaimgui/api" "$stage/THIRD_PARTY_LICENSES"
+            cp reaper/Odium_Reaper_Launcher.lua "$stage/"
             cp reaper/Odium_Reaper_Extension.lua "$stage/"
             cp reaper/Odium_Check_For_Updates.lua "$stage/"
             cp reaper/Register-Odium.lua "$stage/"
@@ -191,17 +192,23 @@ jobs:
         shell: bash
         run: |
           cat > release-notes.md <<'EOF'
-          # Odium Studio REAPER v2.0.0
+          # Odium Studio REAPER v2.1.0
 
-          Native REAPER dağıtımının üç platform paketi:
+          Bu sürüm REAPER kayıt akışını Adobe Audition mix teslimine bağlar:
 
-          - `Odium-REAPER-Windows-Setup.exe` — Windows otomatik kurucu; Odium + ReaImGui + FFmpeg + Action List kaydı.
-          - `Odium-REAPER-macOS-manual.zip` — Apple Silicon, Intel x86_64 ve eski i386 ReaImGui runtime'ıyla manuel paket.
-          - `Odium-REAPER-Linux-manual.tar.gz` — x86_64, aarch64, i686 ve armv7l ReaImGui runtime'ıyla manuel paket.
-          - `version.json` — uygulama güncelleme manifesti ve release SHA-256 değerleri.
-          - `SHA256SUMS.txt` — üç kullanıcı paketinin bütünlük özetleri.
+          - Mixçiye gönderilen paket artık `.rpp` değil, doğrudan Adobe Audition `.sesx` session + göreli medya + `.audub/project.json` + ZIP'tir.
+          - SESX içinde `ORIGINAL_REF` ve `DUB_TAKE` track'leri hazır gelir.
+          - Çok parçalı REAPER kayıtları FFmpeg ile tek taşınabilir take'e dönüştürülür; item arası boşluklar korunur.
+          - Tek-instance launcher ikinci kez çalıştırmada yeni ReaImGui context açmaz.
+          - ReaImGui 0.10 `Begin/End` yaşam döngüsü launcher tarafından güvenli hale getirilmiştir.
 
-          Uyumluluk hedefi REAPER 6.80+; ReaImGui 0.10.0.5 native binary ve `imgui.lua` shim birlikte sabitlenmiş ve hash doğrulamasıyla paketlenmiştir.
+          Dağıtımlar:
+          - `Odium-REAPER-Windows-Setup.exe` — Windows otomatik kurucu.
+          - `Odium-REAPER-macOS-manual.zip` — Apple Silicon, Intel x86_64 ve eski i386 için manuel paket.
+          - `Odium-REAPER-Linux-manual.tar.gz` — x86_64, aarch64, i686 ve armv7l için manuel paket.
+          - `version.json` ve `SHA256SUMS.txt` — güncelleme ve bütünlük manifestleri.
+
+          Uyumluluk hedefi REAPER 6.80+; ReaImGui 0.10.0.5 sabitlenmiştir.
           EOF
 
       - name: Create or update GitHub release

@@ -26,7 +26,7 @@ jobs:
       - name: Run pure Lua smoke tests
         run: lua reaper/tests/test_core.lua
 
-      - name: Validate ReaImGui 0.10 font API usage
+      - name: Validate ReaImGui 0.10 compatibility layer
         shell: bash
         run: |
           set -euo pipefail
@@ -35,6 +35,22 @@ jobs:
             exit 1
           fi
           grep -q -F 'ImGui.PushFont(ctx,font,15)' reaper/Odium_Reaper_Extension.lua
+          grep -q -F "local main_script = join(root, 'Odium_Reaper_Launcher.lua')" reaper/Register-Odium.lua
+          grep -q -F 'GetToggleCommandStateEx' reaper/Odium_Reaper_Launcher.lua
+          grep -q -F 'if visible then return real.End(ctx) end' reaper/Odium_Reaper_Launcher.lua
+
+      - name: Validate Audition SESX delivery integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s reaper/lib/odium_sesx.lua
+          grep -q -F "return core.make_audition_package" reaper/lib/odium_package.lua
+          grep -q -F "'ORIGINAL_REF'" reaper/lib/odium_sesx.lua
+          grep -q -F "'DUB_TAKE'" reaper/lib/odium_sesx.lua
+          grep -q -F 'Odium_Reaper_Launcher.lua' reaper/installer/OdiumReaper.iss
+          grep -q -F 'Odium_Reaper_Launcher.lua' reaper/platform/macos/install.command
+          grep -q -F 'Odium_Reaper_Launcher.lua' reaper/platform/linux/install.sh
+          grep -q '"version": "2.1.0"' reaper/version.json
 
       - name: Validate JSON manifests
         run: python -m json.tool reaper/version.json >/dev/null

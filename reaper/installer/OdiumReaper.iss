@@ -2,7 +2,7 @@
 ; Windows per-user one-click installer, built with Inno Setup 6.
 
 #define AppName "Odium Studio - REAPER Dublaj Uzantısı"
-#define AppVersion "2.0.0"
+#define AppVersion "2.1.0"
 #define AppPublisher "Odium Studio"
 #define AppId "{{C1E0579A-6A8B-4E88-A1B0-0D2F3BC56A15}"
 
@@ -38,11 +38,12 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "reaimgui"; Description: "ReaImGui 0.10.0.5'i REAPER UserPlugins klasörüne kur"; GroupDescription: "Bağımlılıklar:"; Flags: checkedonce
-Name: "ffmpeg"; Description: "FFmpeg'i doğrulanmış sabit paketten Odium klasörüne kur"; GroupDescription: "Bağımlılıklar:"; Flags: checkedonce
-Name: "register"; Description: "Odium'u REAPER Action List'e otomatik kaydet ve paneli aç"; GroupDescription: "REAPER entegrasyonu:"; Flags: checkedonce
+Name: "ffmpeg"; Description: "FFmpeg'i doğrulanmış sabit paketten Odium klasörüne kur (SESX take hazırlama için önerilir)"; GroupDescription: "Bağımlılıklar:"; Flags: checkedonce
+Name: "register"; Description: "Odium güvenli launcher'ını REAPER Action List'e otomatik kaydet ve paneli aç"; GroupDescription: "REAPER entegrasyonu:"; Flags: checkedonce
 Name: "openreadme"; Description: "Kurulumdan sonra kullanım rehberini aç"; GroupDescription: "İsteğe bağlı işlemler:"; Flags: unchecked
 
 [Files]
+Source: "..\Odium_Reaper_Launcher.lua"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Odium_Reaper_Extension.lua"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Odium_Check_For_Updates.lua"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Register-Odium.lua"; DestDir: "{app}"; Flags: ignoreversion

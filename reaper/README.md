@@ -1,6 +1,8 @@
-# Odium Studio – REAPER Dublaj Uzantısı v2.0.0
+# Odium Studio – REAPER Dublaj Uzantısı v2.1.0
 
-Odium'un aktif ürünü Adobe Audition CEP paneli değil, REAPER içinde çalışan native **Lua ReaScript + ReaImGui** uygulamasıdır. Ana giriş dosyası `Odium_Reaper_Extension.lua` dosyasıdır.
+Odium, kayıt ve replik yerleştirme tarafında REAPER içinde çalışan native **Lua ReaScript + ReaImGui** uygulamasıdır. Mix teslim hedefi v2.1.0'dan itibaren **Adobe Audition `.sesx`** formatıdır.
+
+> Normal kullanımda doğrudan `Odium_Reaper_Extension.lua` çalıştırmayın. `Register-Odium.lua`, Action List'e **`Odium_Reaper_Launcher.lua`** kaydeder. Launcher tek-instance korumasını ve ReaImGui 0.10 yaşam döngüsü uyumluluğunu yönetir.
 
 ## Dağıtım paketleri
 
@@ -12,30 +14,24 @@ Her release üç kullanıcı paketi üretir:
 | macOS | `Odium-REAPER-macOS-manual.zip` | Manuel, yardımcı script dahil |
 | Linux | `Odium-REAPER-Linux-manual.tar.gz` | Manuel, yardımcı script dahil |
 
-Aynı release içinde `version.json` ve `SHA256SUMS.txt` da yayınlanır. Windows güncelleyicisi setup dosyasını indirmeden sonra manifestteki SHA-256 ile doğrulayabilir.
+Aynı release içinde `version.json` ve `SHA256SUMS.txt` yayınlanır. Windows güncelleyicisi indirilen setup dosyasını manifestteki SHA-256 ile doğrular.
 
 ## REAPER ve bağımlılık desteği
 
-- **REAPER 6.80+** uyumluluk hedefidir. 6.80 ve sonrasında REAPER'ın ReaScript komut satırı / `-nonewinst` desteği bulunduğu için Windows otomatik Action List kaydı bu taban üzerinde kurulmuştur.
-- REAPER 7.x güncel sürümleri desteklenir.
-- **ReaImGui 0.10.0.5** paketleme sırasında sabitlenir ve upstream SHA-256 değerleriyle doğrulanır.
-- **FFmpeg** mix split, toplu export ve seviye eşitleme için gereklidir. Timeline, proje JSON ve temel REAPER işlemleri FFmpeg olmadan da çalışır.
-- `js_ReaScriptAPI` yalnız gelişmiş klasör seçim penceresi için isteğe bağlıdır; yoksa yol girişi kullanılabilir.
+- **REAPER 6.80+** uyumluluk hedefidir; REAPER 7.x güncel sürümleri desteklenir.
+- **ReaImGui 0.10.0.5** dağıtımda sabitlenir ve upstream SHA-256 değerleriyle doğrulanır.
+- **FFmpeg**, özellikle çok parçalı REAPER kayıtlarını tek Audition take dosyasına dönüştürmek, item arası boşlukları korumak ve isteğe bağlı düzey eşitleme için gereklidir. Windows setup FFmpeg'i otomatik kurar.
+- `js_ReaScriptAPI` yalnız gelişmiş klasör seçim penceresi için isteğe bağlıdır.
 
 ## Windows — otomatik kurulum
 
 1. Release içindeki `Odium-REAPER-Windows-Setup.exe` dosyasını çalıştırın.
 2. Standart REAPER kurulumu kullanıyorsanız varsayılan hedefi değiştirmeyin.
-3. Kurucu varsayılan olarak:
-   - Odium scriptlerini `%APPDATA%\REAPER\Scripts\Odium Studio` altına kurar,
-   - REAPER mimarisine uygun ReaImGui DLL'ini `UserPlugins` altına koyar,
-   - doğrulanmış sabit FFmpeg paketini Odium'un kendi `tools` klasörüne kurar,
-   - REAPER executable dosyasını bulur,
-   - `Register-Odium.lua` bootstrap'ını `reaper.exe -nonewinst` ile çalıştırır,
-   - ana panel ve güncelleme kontrol eylemini Action List'e `AddRemoveReaScript` API'siyle kaydeder.
-4. REAPER açıksa mevcut instance kullanılabilir; kapalıysa kayıt sırasında REAPER açılabilir.
+3. Kurucu Odium scriptlerini, ReaImGui'yi ve FFmpeg'i kurar.
+4. `Register-Odium.lua` otomatik çalıştırılır; eski doğrudan `Odium_Reaper_Extension.lua` Action List kaydı kaldırılır ve güvenli launcher kaydedilir.
+5. REAPER'ı yeniden açtıktan sonra `Actions > Show action list` içinde `Odium Studio` aratıp ana eylemi çalıştırın.
 
-Normal kullanımda artık `Actions > Load ReaScript` adımı gerekmez.
+Launcher açıkken aynı Action'a tekrar basılırsa ikinci bir ReaImGui context oluşturulmaz; mevcut Odium penceresini kullanmanız istenir. Bu davranış ikinci açılışta görülebilen `Missing End()` / invalid context hatalarını önlemek içindir.
 
 ### Windows portable REAPER
 
@@ -45,95 +41,104 @@ Kurulum ekranında hedefi portable resource ağacındaki şu konuma değiştirin
 <PORTABLE_REAPER_RESOURCE>\Scripts\Odium Studio
 ```
 
-Kurucu resource path'i seçilen klasörün iki üst dizini olarak hesaplar. `reaper.exe` portable resource kökünde bulunuyorsa otomatik Action List kaydı da yapılır. Gerekirse setup komut satırında `/REAPEREXE="X:\path\reaper.exe"` verilebilir.
-
-Kaynak klasörden alternatif kurulum için `INSTALL.bat` veya `Install-Odium-Reaper.ps1` kullanılabilir.
+Gerekirse setup komut satırında `/REAPEREXE="X:\path\reaper.exe"` verilebilir.
 
 ## macOS — manuel paket
 
-Release içindeki `Odium-REAPER-macOS-manual.zip` şu ReaImGui mimarilerini birlikte taşır:
-
-- Apple Silicon / arm64
-- Intel x86_64
-- eski Intel i386
-
-Paket açıldıktan sonra:
+Release içindeki `Odium-REAPER-macOS-manual.zip` Apple Silicon/arm64, Intel x86_64 ve eski Intel i386 ReaImGui binary'lerini birlikte taşır.
 
 ```bash
 chmod +x platform/macos/install.command
 ./platform/macos/install.command
 ```
 
-Standart resource yolu `~/Library/Application Support/REAPER` kabul edilir. Custom/portable yol ilk argüman olarak verilebilir. Yardımcı script doğru `.dylib` dosyasını seçip kurar; ardından REAPER'ı yeniden başlatıp `Register-Odium.lua` dosyasını **bir kez** `Actions > New action > Load ReaScript` ile çalıştırırsınız.
-
-Daha ayrıntılı ve tamamen elle kurulum için `platform/macos/README.md` dosyasına bakın. FFmpeg macOS paketine gömülmez; sistemde `ffmpeg` komutu bulunmalıdır (örneğin Homebrew üzerinden).
+Standart resource yolu `~/Library/Application Support/REAPER` kabul edilir. Custom/portable yol ilk argüman olarak verilebilir. Kurulumdan sonra REAPER'ı yeniden başlatıp `Register-Odium.lua` dosyasını **bir kez** `Actions > New action > Load ReaScript` ile çalıştırın. FFmpeg sistemde bulunmalıdır; Homebrew kullanıyorsanız `brew install ffmpeg` kullanılabilir.
 
 ## Linux — manuel paket
 
-Release içindeki `Odium-REAPER-Linux-manual.tar.gz` şu ReaImGui mimarilerini birlikte taşır:
-
-- x86_64 / amd64
-- aarch64 / arm64
-- i686
-- armv7l
-
-Paket açıldıktan sonra:
+Release içindeki `Odium-REAPER-Linux-manual.tar.gz` x86_64, aarch64/arm64, i686 ve armv7l ReaImGui binary'lerini birlikte taşır.
 
 ```bash
 chmod +x platform/linux/install.sh
 ./platform/linux/install.sh
 ```
 
-Varsayılan resource yolu `~/.config/REAPER` kabul edilir. Custom/portable yol ilk argüman olarak verilebilir. Script doğru `.so` dosyasını seçer, `ldd` varsa eksik runtime kütüphanelerini raporlar ve FFmpeg durumunu kontrol eder.
-
-Linux ReaImGui için Fontconfig, GTK/GDK 3.22+ uyumlu runtime ve libepoxy bulunmalıdır. Ayrıntılar `platform/linux/README.md` içindedir.
-
-## Action List kayıt ve kaldırma
-
-`Register-Odium.lua` idempotent bootstrap'tır. Ana paneli ve `Odium Studio - Güncelleme Kontrolü` eylemini resmi `reaper.AddRemoveReaScript` API'siyle kaydeder ve command ID'lerini ExtState içinde saklar.
-
-`Unregister-Odium.lua` aynı kayıtları API üzerinden kaldırır. Windows uninstaller ayrıca REAPER kapalıysa `reaper-kb.ini` içindeki yalnız Odium'a ait satırları yedek alarak temizleyen bir fallback içerir. ReaImGui başka scriptler tarafından kullanılabileceği için uninstaller ortak `UserPlugins` binary'sini otomatik silmez.
-
-## Güncelleme sistemi
-
-Action List'teki `Odium Studio - Güncelleme Kontrolü` eylemi release asset'i olan `version.json` dosyasını okur.
-
-- Windows: yeni setup dosyasını indirir, manifest SHA-256 değeri varsa doğrular ve kurucuyu açar.
-- macOS/Linux: yeni manuel paket/release sayfasını açar; sistem dosyalarında otomatik değişiklik yapmaz.
+Varsayılan resource yolu `~/.config/REAPER` kabul edilir. Custom/portable yol ilk argüman olarak verilebilir. FFmpeg sistem paket yöneticisinden kurulmalıdır.
 
 ## Seslendirme sanatçısı akışı
 
-1. Orijinal ses klasörünü seçin. Uzantı bütün alt klasörleri tarar, sesleri doğal isim sırasına koyar ve `ODIUM - Originals` track'ine yerleştirir.
-2. Kaydı `ODIUM - Recordings` track'ine alın. `Pozisyona göre` veya `Sıraya göre` eşleme çalıştırın.
-3. Projeyi kaydedip paketleyin. Paket taşınabilir `.rpp`, `SessionMedia/`, `.audub/project.json`, orijinaller, hazırlanmış take dosyaları, rapor ve ZIP içerir.
+1. **Orijinalleri hazırla:** orijinal ses klasörünü seçin. Odium sesleri doğal isim sırasıyla `ODIUM - Originals` track'ine yerleştirir.
+2. **Kaydı eşle:** kayıtları `ODIUM - Recordings` track'ine alın ve pozisyon/sıra eşleme çalıştırın. Bir replik birden fazla item'dan oluşabilir.
+3. **Mixçiye gönder:** `Adobe Audition .sesx paketi + ZIP oluştur` işlemini çalıştırın.
 
-Düzey eşitleme açıksa paket kopyaları eşleştikleri orijinallerin FFmpeg `volumedetect` ortalama dB değerine getirilir. Kayıt tepesinin -1 dBFS'i aşmasına izin verilmez. Kaynak REAPER medyasına dokunulmaz.
+REAPER `.rpp` dosyası yalnız **yerel kaynak çalışma projesidir**. Mixçiye gönderilen ZIP'e RPP konmaz.
 
-## Mixçi akışı
+## Adobe Audition teslim paketinin yapısı
 
-1. `.audub/project.json` yükleyin. Project JSON yoksa orijinal ve kayıt track numaralarını vererek pozisyonlardan proje oluşturun.
-2. Tek parça mixdown dosyasını seçin ve replik sınırlarına göre bölün.
-3. İstenen export presetini seçip orijinal dosya adlarıyla toplu export alın.
+Örnek çıktı:
 
-## Korunan özellikler
+```text
+Game_Dub_Project_AU_Dub_Package_YYYYMMDD_HHMMSS/
+├─ Game_Dub_Project.sesx
+├─ Audio/
+│  ├─ Originals/
+│  │  ├─ 0001_line01.wav
+│  │  └─ ...
+│  └─ Takes/
+│     ├─ 0001_line01_DUB.wav
+│     └─ ...
+├─ .audub/
+│  ├─ project.json
+│  └─ package-report.json
+└─ README_AUDITION_MIX.txt
+```
 
-- Seslendirme sanatçısı / mixçi rol ayrımı
-- Alt klasörler dahil ses tarama ve doğal sıralama
-- Timeline yerleşimi ve seçili repliğe gitme
-- Pozisyon veya sıra tabanlı take eşleme
-- Bir repliğin birden çok item'dan oluşması ve aradaki boşlukların korunması
-- `.audub/project.json` okuma/yazma ve eski şema alanlarını normalize etme
-- Hazır take klasörünü dosya adına göre bağlama
-- FFmpeg ile mix split ve toplu export
-- WAV/MP3 oyun, Wwise ve master presetleri
-- Paketleme, `.rpp` içindeki medya yollarını `SessionMedia/` klasörüne yeniden bağlama, rapor ve ZIP
-- Orijinal ortalama dB seviyesine eşitleme ve -1 dBFS tepe koruması
-- Sağlık raporu ve işlem günlüğü
-- İsteğe bağlı yerel PIN kilidi
+Aynı klasör ayrıca ZIP olarak oluşturulur.
+
+### SESX içindeki track'ler
+
+- **`ORIGINAL_REF`** — orijinal referanslar REAPER'daki timeline konumlarında.
+- **`DUB_TAKE`** — eşleşen seslendirme kayıtları kendi gerçek başlangıç konumlarında.
+- **Master** — iki track'in varsayılan çıkışı.
+
+SESX medya referansları mutlak `C:\...` veya kullanıcı klasörüne bağlanmaz; `Audio\Originals\...` ve `Audio\Takes\...` biçiminde **göreli yollar** kullanılır. Mixçi ZIP'i açıp `.sesx` dosyasını Adobe Audition ile açabilir.
+
+### Çok parçalı kayıtlar
+
+Bir repliğe ait REAPER item'ları birden fazlaysa Odium bunları FFmpeg ile tek taşınabilir WAV'a dönüştürür. Item'ların kaynak offset/play-rate bilgileri ve timeline'daki aralarındaki sessizlikler mevcut `segments` modeli üzerinden korunur. Böylece mixçinin bilgisayarında REAPER'a özgü item/take bilgisine ihtiyaç kalmaz.
+
+### Düzey eşitleme
+
+`Kayıt düzeyini orijinal ortalama dB seviyesine eşitle` açıksa yalnız **paket kopyası** değiştirilir. Orijinal REAPER kayıt dosyasına dokunulmaz. Hedef gain orijinal/kayıt ortalama seviyesinden hesaplanır ve tepenin -1 dBFS'i aşmaması için sınırlandırılır.
+
+## Audition tarafında kullanım
+
+Mixçi için normal akış:
+
+1. ZIP'i tamamen bir klasöre çıkarın.
+2. Paket kökündeki `.sesx` dosyasını Adobe Audition ile açın.
+3. `ORIGINAL_REF` ve `DUB_TAKE` track'lerinin online olduğunu kontrol edin.
+4. Mix işlemini Audition'da yapın.
+5. Eski Odium Audition paneli kullanılıyorsa `.audub/project.json` aynı proje/replik metadata'sını taşır.
+
+## REAPER içindeki mix araçları
+
+REAPER tarafındaki mevcut mixçi yardımcıları geriye dönük olarak korunur: `.audub/project.json` yükleme, tek mixdown'ı replik sınırlarına göre bölme ve orijinal isimlerle toplu export. Ana ekip akışı Audition olduğu için yeni teslim formatı SESX'tir.
+
+## Action List kayıt ve kaldırma
+
+`Register-Odium.lua` idempotent bootstrap'tır. Önce eski doğrudan UI script kaydını kaldırır, ardından `Odium_Reaper_Launcher.lua` ve `Odium Studio - Güncelleme Kontrolü` eylemini `reaper.AddRemoveReaScript` ile kaydeder.
+
+`Unregister-Odium.lua` launcher, eski raw UI ve updater kayıtlarını kaldırır. Windows uninstaller da REAPER kapalıysa aynı üç Action List satırını yedek alarak temizler.
+
+## Güncelleme sistemi
+
+- Windows: yeni setup indirilir, SHA-256 doğrulanır ve kurucu açılır.
+- macOS/Linux: yeni manuel paket/release sayfası açılır.
 
 ## Güvenli çalışma davranışı
 
-Uzantı yalnız `P_EXT:ODIUM_ROLE` etiketi taşıyan kendi item'larını temizler veya günceller. Kullanıcının başka track ve item'larına toplu silme uygulanmaz. Timeline işlemleri REAPER Undo bloğu içinde yürütülür.
+Uzantı yalnız `P_EXT:ODIUM_ROLE` etiketi taşıyan kendi REAPER item'larını temizler veya günceller. Kullanıcının başka track ve item'larına toplu silme uygulanmaz. Timeline işlemleri REAPER Undo bloğu içinde yürütülür.
 
 ## Proje dosyası
 
@@ -143,14 +148,14 @@ Varsayılan konum:
 <proje-kökü>/.audub/project.json
 ```
 
-Yeni şema `schemaVersion: 3` kullanır. Eski Audition paketlerindeki temel `lines`, `mixStart`, `mixEnd`, `takes`, `selectedTakeId`, `originalAbsolutePath` ve `originalRelativePath` alanları yüklenirken korunur.
+Şema `schemaVersion: 3` kullanır. Eski Audition paketlerindeki temel `lines`, `mixStart`, `mixEnd`, `takes`, `selectedTakeId`, `originalAbsolutePath` ve `originalRelativePath` alanları yüklenirken korunur. SESX paket kopyasında medya yolları paket içindeki dosyalara yeniden yazılır.
 
 ## Bilinen sınırlar
 
-- ReaImGui zorunludur. Windows paketinde otomatik kurulur; macOS/Linux paketlerinde platform binary'si paket içinde olup manuel yardımcısı tarafından yerleştirilir.
-- REAPER item fade/crossfade ve item FX ayarları FFmpeg üzerinden hazırlanan take dosyasına henüz basılmaz; taşınabilir `.rpp` içinde korunur.
-- macOS/Linux paketleri bilinçli olarak manuel dağıtımdır; sistem package manager veya root yetkisi kullanılmaz.
+- REAPER item fade/crossfade ve item FX zincirleri henüz Audition SESX'e efekt olarak çevrilmez. Seçili kayıtların ses içeriği/segment yapısı taşınır.
+- GitHub Actions SESX XML üretimini ve dağıtım paketlerini doğrular; gerçek Adobe Audition uygulamasında açılış kabul testi fiziksel/gerçek bir Audition kurulumu gerektirir.
+- macOS/Linux dağıtımları bilinçli olarak manuel kurulumdur.
 
 ## Üçüncü taraf bileşenler
 
-Ayrıntılar ve sabitlenen sürümler `THIRD_PARTY_NOTICES.md` içindedir. Release paketleri ReaImGui lisans dosyalarını da taşır.
+Ayrıntılar `THIRD_PARTY_NOTICES.md` dosyasındadır.

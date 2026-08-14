@@ -36,6 +36,7 @@ Write-Host "REAPER resource: $ReaperResourcePath"
 New-Item -ItemType Directory -Force -Path $Target, (Join-Path $Target 'lib'), $Tools, $Vendor | Out-Null
 
 $Files = @(
+  'Odium_Reaper_Launcher.lua',
   'Odium_Reaper_Extension.lua',
   'Odium_Check_For_Updates.lua',
   'Register-Odium.lua',
@@ -83,9 +84,10 @@ if (-not $SkipRegister) {
 Write-Host @"
 
 Kurulum özeti
-- Odium: $Target
+- Odium launcher: $Target\Odium_Reaper_Launcher.lua
 - ReaImGui: $ReaperResourcePath\UserPlugins
 - FFmpeg: $Tools\ffmpeg.exe
+- Mix teslimi: Adobe Audition .sesx + medya + ZIP
 - Minimum önerilen REAPER: 6.80+
 
 Portable REAPER kullanıyorsanız -ReaperResourcePath ve gerekirse -ReaperExe parametrelerini verin.
