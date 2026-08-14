@@ -1,10 +1,10 @@
 {
-  "version": "2.1.1",
+  "version": "2.1.2",
   "channel": "reaper",
   "minimumReaper": "6.80",
   "reaImGuiVersion": "0.10.0.5",
   "deliveryFormat": "adobe-audition-sesx",
-  "notes": "Hotfix: Eski Odium_Reaper_Extension.lua Action List kaydı çalıştırılsa bile ReaImGui 0.10 End() yaşam döngüsü güvenli hale getirilir ve kayıt otomatik olarak güvenli launcher'a taşınır. Windows yükseltmeleri Action List kaydını artık her kurulumda onarır. Adobe Audition SESX teslim akışı aynen devam eder.",
+  "notes": "Hotfix: Launcher artık gerçek yaşayan UI'ı lease/heartbeat ile doğrular. Crash'ten kalan 'çalışıyor' durumu otomatik temizlenir; gerçekten açık pencere ikinci çalıştırmada öne getirilir ve off-screen kalmışsa REAPER ana viewport'una taşınır. Adobe Audition SESX teslim akışı aynen devam eder.",
   "repository": "apexlions16/Odium-Audition-Extension-Reaper",
   "releaseUrl": "https://github.com/apexlions16/Odium-Audition-Extension-Reaper/releases/latest",
   "setupUrl": "https://github.com/apexlions16/Odium-Audition-Extension-Reaper/releases/latest/download/Odium-REAPER-Windows-Setup.exe",
