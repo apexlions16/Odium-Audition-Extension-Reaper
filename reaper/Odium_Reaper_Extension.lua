@@ -295,8 +295,8 @@ local function draw_advanced()
         local mark=(line.selectedTakePath and '✓' or line.mixStart and '◐' or '·')
         if ImGui.Selectable(ctx,string.format('%s %04d  %s',mark,i,line.originalName or line.lineId),false) then host.select_line(state.project,i) end
       end
+      ImGui.EndChild(ctx)
     end
-    ImGui.EndChild(ctx)
   end
   ImGui.SeparatorText(ctx,'Yerel erişim PIN’i')
   state.pinSetup=input_text('Yeni PIN (boş = kaldır)',state.pinSetup)
@@ -312,8 +312,8 @@ local function draw_log()
   if child_visible then
     for _,line in ipairs(state.logs) do ImGui.TextWrapped(ctx,line) end
     if #state.logs>0 then ImGui.SetScrollHereY(ctx,1.0) end
+    ImGui.EndChild(ctx)
   end
-  ImGui.EndChild(ctx)
 end
 
 local open=true
