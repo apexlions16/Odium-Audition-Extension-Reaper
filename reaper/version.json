@@ -1,6 +1,15 @@
 {
   "version": "2.0.0",
   "channel": "reaper",
-  "notes": "İlk native REAPER portu: ReaScript/ReaImGui, timeline eşleme, paketleme, FFmpeg split/export ve düzey eşitleme.",
-  "repository": "apexlions16/Odium-Audition-Extension-Reaper"
+  "minimumReaper": "6.80",
+  "reaImGuiVersion": "0.10.0.5",
+  "notes": "Native REAPER portu; Windows tek-tık kurulum, macOS/Linux manuel paketler, otomatik Action List kaydı, güncelleme kontrolü, FFmpeg split/export ve paketleme.",
+  "repository": "apexlions16/Odium-Audition-Extension-Reaper",
+  "releaseUrl": "https://github.com/apexlions16/Odium-Audition-Extension-Reaper/releases/latest",
+  "setupUrl": "https://github.com/apexlions16/Odium-Audition-Extension-Reaper/releases/latest/download/Odium-REAPER-Windows-Setup.exe",
+  "macosUrl": "https://github.com/apexlions16/Odium-Audition-Extension-Reaper/releases/latest/download/Odium-REAPER-macOS-manual.zip",
+  "linuxUrl": "https://github.com/apexlions16/Odium-Audition-Extension-Reaper/releases/latest/download/Odium-REAPER-Linux-manual.tar.gz",
+  "setupSha256": "",
+  "macosSha256": "",
+  "linuxSha256": ""
 }
