@@ -26,6 +26,16 @@ jobs:
       - name: Run pure Lua smoke tests
         run: lua reaper/tests/test_core.lua
 
+      - name: Validate ReaImGui 0.10 font API usage
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R -F 'ImGui.PushFont(ctx,font)' reaper --include='*.lua'; then
+            echo 'ReaImGui 0.10 PushFont requires an explicit font size argument.' >&2
+            exit 1
+          fi
+          grep -q -F 'ImGui.PushFont(ctx,font,15)' reaper/Odium_Reaper_Extension.lua
+
       - name: Validate JSON manifests
         run: python -m json.tool reaper/version.json >/dev/null
 
