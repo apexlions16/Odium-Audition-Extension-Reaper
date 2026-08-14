@@ -24,7 +24,9 @@ jobs:
           find reaper -name '*.lua' -print0 | xargs -0 -n1 luac -p
 
       - name: Run pure Lua smoke tests
-        run: lua reaper/tests/test_core.lua
+        run: |
+          lua reaper/tests/test_core.lua
+          lua reaper/tests/test_legacy_action.lua
 
       - name: Validate ReaImGui 0.10 compatibility layer
         shell: bash
@@ -72,6 +74,7 @@ jobs:
           grep -q -F 'Odium_Reaper_Launcher.lua' reaper/platform/linux/install.sh
           grep -q '"version": "2.1.1"' reaper/version.json
           grep -q -F "core.VERSION = '2.1.1'" reaper/lib/odium_package.lua
+          grep -q -F "local CURRENT_VERSION = '2.1.1'" reaper/Odium_Check_For_Updates.lua
 
       - name: Validate JSON manifests
         run: python -m json.tool reaper/version.json >/dev/null
