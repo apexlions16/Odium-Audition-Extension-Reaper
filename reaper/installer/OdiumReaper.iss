@@ -51,6 +51,7 @@ Source: "..\lib\*.lua"; DestDir: "{app}\lib"; Flags: ignoreversion
 Source: "..\tools\*.ps1"; DestDir: "{app}\tools"; Flags: ignoreversion
 Source: "..\vendor\reaimgui\reaper_imgui-x64.dll"; DestDir: "{app}\vendor\reaimgui"; Flags: ignoreversion
 Source: "..\vendor\reaimgui\reaper_imgui-x86.dll"; DestDir: "{app}\vendor\reaimgui"; Flags: ignoreversion
+Source: "..\vendor\reaimgui\api\imgui.lua"; DestDir: "{app}\vendor\reaimgui\api"; Flags: ignoreversion
 Source: "..\vendor\reaimgui\VERSION.txt"; DestDir: "{app}\vendor\reaimgui"; Flags: ignoreversion
 Source: "..\vendor\reaimgui\licenses\*"; DestDir: "{app}\THIRD_PARTY_LICENSES"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
