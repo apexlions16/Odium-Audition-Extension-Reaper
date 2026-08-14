@@ -41,7 +41,7 @@ end
 
 local core = dofile(base .. '../lib/odium_core.lua')
 dofile(base .. '../lib/odium_package.lua')(core)
-assert(core.VERSION == '2.1.1')
+assert(core.VERSION == '2.1.2')
 
 local factory = require('imgui')
 local ImGui = factory('0.10')
