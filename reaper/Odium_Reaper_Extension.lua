@@ -321,7 +321,8 @@ local function loop()
   local visible
   visible,open=ImGui.Begin(ctx,'Odium Studio - REAPER Dublaj Uzantısı',open)
   if visible then
-    ImGui.PushFont(ctx,font)
+    -- ReaImGui 0.10 requires an explicit size argument when pushing a font.
+    ImGui.PushFont(ctx,font,15)
     draw_header()
     if not state.unlocked then draw_login()
     elseif not state.role then draw_role_chooser()
