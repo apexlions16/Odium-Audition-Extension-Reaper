@@ -47,7 +47,7 @@ if (Test-Path -LiteralPath $Target) {
     $NeedCopy = $false
     Write-Host "ReaImGui zaten aynı sürüm: $Target"
   } elseif (Get-Process reaper -ErrorAction SilentlyContinue) {
-    throw 'REAPER açıkken mevcut ReaImGui DLL güncellenemiyor. REAPER\'ı tamamen kapatıp setup dosyasını tekrar çalıştırın.'
+    throw "REAPER açıkken mevcut ReaImGui DLL güncellenemiyor. REAPER'ı tamamen kapatıp setup dosyasını tekrar çalıştırın."
   }
 }
 
