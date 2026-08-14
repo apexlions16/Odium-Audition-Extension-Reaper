@@ -9,6 +9,7 @@ local SCRIPT_DIR = SCRIPT_PATH:match('^(.*[\\/])') or './'
 local EXT_SECTION = 'OdiumReaper'
 local LEASE_KEY = 'UI_LEASE_UNTIL'
 local FOCUS_KEY = 'UI_FOCUS_REQUEST'
+local LEASE_SECONDS = 20
 
 if not reaper.ImGui_GetBuiltinPath then
   reaper.MB('Odium REAPER Uzantısı için ReaImGui gerekli.', 'Odium Studio', 0)
@@ -22,6 +23,12 @@ local function set_running(value)
   if not has_action or not reaper.SetToggleCommandState then return end
   reaper.SetToggleCommandState(section_id, command_id, value and 1 or 0)
   if reaper.RefreshToolbar2 then reaper.RefreshToolbar2(section_id, command_id) end
+end
+
+local function renew_lease()
+  if reaper.SetExtState then
+    reaper.SetExtState(EXT_SECTION, LEASE_KEY, tostring(os.time() + LEASE_SECONDS), false)
+  end
 end
 
 local function lease_is_alive()
@@ -41,7 +48,7 @@ local toggle_on = has_action and reaper.GetToggleCommandStateEx
   and reaper.GetToggleCommandStateEx(section_id, command_id) == 1
 
 if toggle_on and lease_is_alive() then
-  -- Gerçek UI yaşıyor. Yeni context açmak yerine mevcut pencereye odaklanma/kurtarma isteği gönder.
+  -- Gerçek UI yaşıyor. Yeni context açmak yerine mevcut pencereyi öne getir.
   reaper.SetExtState(EXT_SECTION, FOCUS_KEY, '1', false)
   return
 end
@@ -53,7 +60,7 @@ if toggle_on then
 end
 
 set_running(true)
-reaper.SetExtState(EXT_SECTION, LEASE_KEY, tostring(os.time() + 10), false)
+renew_lease()
 -- Her normal açılışta pencerenin görünür çalışma alanına gelmesini iste.
 reaper.SetExtState(EXT_SECTION, FOCUS_KEY, '1', false)
 
@@ -78,6 +85,30 @@ local begin_visible = setmetatable({}, {__mode='k'})
 local proxy = setmetatable({}, {__index=real})
 
 proxy.Begin = function(ctx, ...)
+  -- Begin her frame çağrıldığı için bu lease gerçekten yaşayan UI'ı temsil eder.
+  renew_lease()
+
+  local focus_requested = reaper.GetExtState
+    and reaper.GetExtState(EXT_SECTION, FOCUS_KEY) == '1'
+  if focus_requested then
+    if reaper.DeleteExtState then reaper.DeleteExtState(EXT_SECTION, FOCUS_KEY, false) end
+    if real.SetNextWindowFocus then real.SetNextWindowFocus(ctx) end
+    if real.SetNextWindowCollapsed and real.Cond_Always then
+      real.SetNextWindowCollapsed(ctx, false, real.Cond_Always)
+    end
+    -- Pencere başka monitörde/off-screen kalmışsa ana REAPER viewport'una geri taşı.
+    if real.GetMainViewport and real.Viewport_GetWorkPos and real.SetNextWindowPos and real.Cond_Always then
+      local viewport = real.GetMainViewport(ctx)
+      local x, y = real.Viewport_GetWorkPos(viewport)
+      real.SetNextWindowPos(ctx, x + 36, y + 36, real.Cond_Always)
+    end
+  end
+
+  -- İlk kullanımda makul bir boyut ver; sonraki kullanıcı resize'larını koru.
+  if real.SetNextWindowSize and real.Cond_FirstUseEver then
+    real.SetNextWindowSize(ctx, 650, 760, real.Cond_FirstUseEver)
+  end
+
   local visible, open = real.Begin(ctx, ...)
   begin_visible[ctx] = visible and true or false
   return visible, open
