@@ -136,7 +136,8 @@ return function(core)
   migrate_legacy_action_to_launcher()
 
   dofile(base .. 'odium_sesx.lua')(core)
-  core.VERSION = '2.1.2'
+  dofile(base .. 'odium_sesx_recordings.lua')(core)
+  core.VERSION = '2.1.3'
 
   -- Mevcut UI core.make_package çağırdığı için API adını koruyoruz; çıktı artık SESX'tir.
   function core.make_package(project, opts)
@@ -144,7 +145,8 @@ return function(core)
     return core.make_audition_package(project, {
       packageRoot = opts.packageRoot,
       ffmpeg = opts.ffmpeg,
-      levelMatchOriginal = opts.levelMatchOriginal
+      levelMatchOriginal = opts.levelMatchOriginal,
+      recordingItems = opts.recordingItems
     })
   end
 
